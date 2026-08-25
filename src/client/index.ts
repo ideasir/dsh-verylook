@@ -20,6 +20,7 @@ import { createEyeController, type EyeController } from './eye-controller.ts'
 import { createFeatureController, type FeatureController } from './feature-controller.ts'
 import { createPendingFilesController, type PendingFilesController } from './pending-files.ts'
 import { CopySessionIdButton, type CopySessionIdInjected } from './CopySessionIdButton.tsx'
+import { SessionHeaderCopyButton, type SessionHeaderCopyButtonProps } from './SessionHeaderCopyButton.tsx'
 import { installChatMinimap } from './ChatMinimap.ts'
 import { LooklookUserMessageNodeView } from './UserMessageNodeView.tsx'
 import { LooklookPluginCard, type LooklookCardInjected } from './PluginTab.tsx'
@@ -770,15 +771,15 @@ export function apply(ctx: ClientContext): void {
         { ok: boolean; value?: { version: string } | { error?: string }; error?: { message?: string } }
       >
     } | undefined
-    if (remote?.getPluginVersion === undefined) return '0.1.1-rc.2'
+    if (remote?.getPluginVersion === undefined) return '0825'
     try {
       const envelope = await remote.getPluginVersion()
-      if (!envelope.ok) return '0.1.1-rc.2'
+      if (!envelope.ok) return '0825'
       const value = envelope.value
-      if (value === undefined) return '0.1.1-rc.2'
-      return ('version' in value && value.version) ? value.version : '0.1.1-rc.2'
+      if (value === undefined) return '0825'
+      return ('version' in value && value.version) ? value.version : '0825'
     } catch {
-      return '0.1.1-rc.2'
+      return '0825'
     }
   }
 
@@ -1179,6 +1180,14 @@ export function apply(ctx: ClientContext): void {
     order: 10,
     inject: copySessionIdInject,
   }, CopySessionIdButton))
+
+  // Session header copy button: leftmost action in the header bar (order=-100),
+  // always visible even when message-level actions are hidden (e.g. mid-conversation crash).
+  ctx.slots.inject('conversation.session.header.actions', () => ctx.slots.register({
+    name: 'conversation.session.header.actions',
+    id: 'looklook-session-header-copy',
+    order: -100,
+  }, SessionHeaderCopyButton))
 
   // ── Chat minimap — left-side vertical dash bar ────────────────
   ctx.effect(() => { installChatMinimap(); return () => {} }, 'dsh-looklook: chat minimap')

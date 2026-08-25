@@ -1,5 +1,20 @@
 # Changelog
 
+## [0825] - 2026-08-25
+
+### 新增
+- **会话 Header 复制按钮**：在 `conversation.session.header.actions` 注册（order=-100），挂载后用 DOM 操作将按钮从标题栏右侧移动到面包屑导航之前，视觉上显示在标题左边。点击复制 `dsh-session://<id>` + 标题到剪贴板。比消息栏按钮更可靠——对话出错导致单条消息未渲染时，消息栏按钮消失但 Header 按钮始终可见。
+- **typert.host.js 补全**：新增 `capabilityCheck`、`getPluginVersion`、`checkUpdate`、`uninstallPlugin` 四个方法的 members 描述和 invocations 路由条目，修复点击「全部检测」报 `Failed to fetch` 的问题。
+
+### 修复
+- **CopySessionIdButton 标题字段读取**：从 `s.displayTitle` 改为从 `useSessions` 的 `byId[sessionId].title` 读取，准确获取持久化标题。
+
+### 踩过的坑
+- **typert.host.js 漏登**：是手写路由清单，不受 build 脚本管理。新加 `@Remote` 方法必须同步更新 `members[]` 和 `invocations[]`，否则 RPC 调用返回网络错误。对比命令：`grep "async " src/remote.ts | grep -oP "async \K\w+" | sort` vs `grep "method:" lib/typert.host.js | sort`
+- **DOM 移动按钮位置**：通过 `insertBefore` 将按钮从 headerActions 移到 titleCluster（面包屑前），而不是用 CSS order——因为两者在不同 flex 容器里。移动元素本身不是 React 创建的，所以不会触发虚拟 DOM 冲突。
+
+---
+
 ## [0821-rc.8] - 2026-08-20
 
 ### 新增
@@ -19,6 +34,10 @@
 - **fileRegistry key 不匹配导致缩略图 0B**：registry 用原始文件名做 key（不是哈希名），`UserMessageNodeView` 渲染时正确匹配。
 - **模型找不到文件**：文本末尾保留 `[f:serverName]` 紧凑格式供 AI 使用。
 - **feature-controller / eye-controller 竞态条件**：RPC 未就绪时不再擅自默认状态，改为 600ms 重试。
+
+### 新增
+- **会话 Header 复制按钮**：在会话标题栏左侧（`conversation.session.header.actions` order=-100）注册一个小图标按钮，点击复制 `dsh-session://<id>` + 标题。比消息栏按钮更可靠——对话出错导致单条消息未渲染时，消息栏按钮消失，但 Header 按钮始终可见。
+- **CopySessionIdButton**：修改标题字段来源从 `s.displayTitle` 改为从 `useSessions` 的 `byId[sessionId].title` 读取（准确获取持久化标题）。
 - **MutationObserver 循环触发**（ChatMinimap 越点越多）：给标尺添加 `looklook-minimap` class，observer 排除自身变化。
 - **ChatMinimap 加载不全**：从 React store 直接读取完整消息列表，不再依赖 DOM 查询（虚拟滚动只渲染 6 个节点）。
 - **ChatMinimap 切换会话延迟**：改用 document.body MutationObserver 实时监听，不再轮询等待。
