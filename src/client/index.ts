@@ -771,15 +771,15 @@ export function apply(ctx: ClientContext): void {
         { ok: boolean; value?: { version: string } | { error?: string }; error?: { message?: string } }
       >
     } | undefined
-    if (remote?.getPluginVersion === undefined) return '0825'
+    if (remote?.getPluginVersion === undefined) return '0825-0.1.1-rc.2'
     try {
       const envelope = await remote.getPluginVersion()
-      if (!envelope.ok) return '0825'
+      if (!envelope.ok) return '0825-0.1.1-rc.2'
       const value = envelope.value
-      if (value === undefined) return '0825'
-      return ('version' in value && value.version) ? value.version : '0825'
+      if (value === undefined) return '0825-0.1.1-rc.2'
+      return ('version' in value && value.version) ? value.version : '0825-0.1.1-rc.2'
     } catch {
-      return '0825'
+      return '0825-0.1.1-rc.2'
     }
   }
 

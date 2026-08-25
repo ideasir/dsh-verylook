@@ -1,6 +1,6 @@
 # CHANGE LOG
 
-## 2026-08-25 v0825 会话Header复制按钮 + typert.host.js补全
+## 2026-08-25 v0825-0.1.1-rc.2 会话Header复制按钮 + typert.host.js补全
 
 ### 为什么
 两个问题同时修：①点击「全部检测」报 Failed to fetch（typert.host.js 漏登）；②复制会话ID按钮放在标题右边，对话出错时消息栏消失导致复制功能不可用。

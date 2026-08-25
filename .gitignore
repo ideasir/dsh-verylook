@@ -11,3 +11,6 @@ looklook-asr/
 
 # 构建产物（git rm --cached 掉）
 lib/
+# 例外：typert.host.js 是手写路由清单（build 不生成），必须入库
+!lib/typert.host.js
+!lib/typert.host.d.ts
