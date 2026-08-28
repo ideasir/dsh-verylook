@@ -1,6 +1,6 @@
 # Look Look
 
-> 当前版本 `0825-0.1.1-rc.2`，适配 DSH `v0.1.1-rc.2`（开发者预览版）。使 DeepSeek Harness 能 Look 万物——图片、视频、音频、PSD、Office 文档、PDF、压缩包，以及聊天记录。新对话能 Look 旧对话。
+> 当前版本 `0828-0.1.1-rc.2`，适配 DSH `v0.1.1-rc.2`（开发者预览版）。使 DeepSeek Harness 能 Look 万物——图片、视频、音频、PSD、Office 文档、PDF、压缩包，以及聊天记录。新对话能 Look 旧对话。
 
 ![DSH 插件设置页](screenshots/04-settings-zh.jpg)
 ![插件验证报告](screenshots/06-verification-report.jpg)
@@ -9,7 +9,7 @@
 
 DSH 目前还在开发者预览阶段，版本更新较频繁，每次大版本更新后插件需要重新适配。
 
-当前版本对应 DSH `v0.1.0-rc.8`，后续会持续跟进。
+当前版本对应 DSH `v0.1.1-rc.2`，后续会持续跟进。
 
 ## 部署方式
 

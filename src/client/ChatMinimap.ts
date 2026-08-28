@@ -9,11 +9,15 @@ let installed = false
 
 export function installChatMinimap(): void {
   if (installed) return
+  // 轨迹页有自己的滚动容器，对话导航标尺不应出现在轨迹页
+  if (document.querySelector('[data-trajectory-scroll]')) return
   installed = true
 
   const wait = setInterval(() => {
     const scrollEl = document.querySelector('[class*="scrollBody"], [class*="scroller"], .Md3f7G_scroll') as HTMLElement | null
     if (!scrollEl) return
+    // 二次确认：不在轨迹页内
+    if (document.querySelector('[data-trajectory-scroll]')) { clearInterval(wait); return }
     clearInterval(wait)
     setup(scrollEl)
   }, 400)
@@ -195,6 +199,10 @@ function setup(scrollEl: HTMLElement): void {
   // ── 刷新 ──────────────────────────────────────────────────
   function refresh(): void {
     try {
+      // 轨迹页（data-trajectory-scroll）隐藏标尺，对话页显示
+      const inTrajectory = !!document.querySelector('[data-trajectory-scroll]')
+      ruler.style.display = inTrajectory ? 'none' : (entries.length > 0 ? 'block' : 'none')
+      if (inTrajectory) return
       const updated = readUserMessages()
       const nodesJson = JSON.stringify(updated.map(e => e.key))
       if (nodesJson !== lastNodesJson) {

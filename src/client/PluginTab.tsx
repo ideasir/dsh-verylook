@@ -18,6 +18,9 @@ import { ModelSettingsSection, type ModelSettingsInjected } from './VisionSettin
 import { EnvCheckDialog, type EnvCheckInjected } from './EnvCheck.tsx'
 import type { EnvCheckItem, EnvCheckReport, CapabilityReport } from './upload-shared.ts'
 
+// 标题图标（Eye，与 veryIM/passpass 标题图标风格一致：Lucide stroke-width 2）
+const EyeSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>'
+
 /** Injected face supplied by the plugin apply closure. */
 export interface LooklookCardInjected {
   /** The wire API client for model discovery. */
@@ -145,6 +148,7 @@ export function LooklookPluginCard(props: LooklookCardInjected) {
       >
         <span style={css.headText}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+            <span dangerouslySetInnerHTML={{ __html: EyeSvg }} style={{ display: 'inline-flex', flexShrink: 0 }} />
             <span style={css.name}>{title}</span>
             {version !== '' && (
               <span
