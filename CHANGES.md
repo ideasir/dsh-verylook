@@ -1,5 +1,28 @@
 # CHANGE LOG
 
+## 2026-08-29 v0829-0.1.2 渠道编辑改为弹窗（与其他插件统一交互）
+
+### 为什么
+Look 插件渠道编辑原本是"当前页面内嵌展开"（点渠道卡片在卡片下方展开表单），
+与其他 ideasir 插件（makemake/passpass/veryIM）的弹窗形式不统一，主任要求改成弹窗。
+
+### 改了哪些（客户端）
+#### ProviderListEditor.tsx
+- 渠道卡片行不再内嵌 renderEditor（点卡片只打开弹窗）
+- 新增弹窗：fixed 遮罩 + 居中面板（maxWidth 560，80vh 内滚动）
+  - 右上角 X 关闭按钮（IconCloseOutline16），点遮罩也可关闭
+  - 编辑/添加共用 renderEditor 表单
+  - 底部：保存 → 取消 → 删除（靠右红色，仅编辑模式，confirm 后删除并关闭）
+- 添加渠道按钮保持底部独立
+
+#### locales.ts
+- 中英文新增 settings.provider.edit key（编辑提供商 / Edit provider）
+
+### 验证
+- tsdown 构建通过（lib/client.js 182KB）
+- 部署产物确认含弹窗代码（position:fixed）、关闭图标、删除确认
+
+
 ## 2026-08-25 v0825-0.1.1-rc.2 会话Header复制按钮 + typert.host.js补全
 
 ### 为什么
@@ -78,3 +101,22 @@ cp -r /vol1/1000/DeepSeek/dsh-makemake /root/.dsh/profiles/web/node_modules/dsh-
 kill $(ss -tlnp | grep 3080 | grep -oP 'pid=\K[0-9]+')
 cd /root/.dsh/profiles/web && npx dsh --profile web --port 3080 --no-open
 ```
+## 2026-08-29 — 渠道编辑改为弹窗（与其他插件统一）
+
+### 问题
+Look 插件渠道编辑是"当前页面内嵌展开"（点渠道卡片在卡片下方展开表单），
+其他插件（makemake/passpass/veryIM）是弹窗形式，交互不统一。
+
+### 修改（客户端）
+- ProviderListEditor.tsx：渠道卡片行不再内嵌 renderEditor
+- 点卡片/编辑按钮 → setEditingId → 弹出 fixed 遮罩弹窗（居中面板，含表单+保存/取消）
+- 点添加 → setAddDraft → 同样弹窗
+- 弹窗点击遮罩关闭、面板内 stopPropagation
+- locales.ts：中英文加 settings.provider.edit key
+
+### 验证
+- tsdown 构建通过，弹窗代码已部署
+
+### 补充（弹窗细节，2026-08-29）
+- 弹窗右上角关闭按钮：从 IconTrashOutline16 改为 IconCloseOutline16（X 图标）
+- 删除按钮移到保存/取消后面（marginLeft auto 靠右），仅编辑模式显示，confirm 后删除并关闭弹窗

@@ -18,7 +18,7 @@ import {
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import {
   IconChevronDownOutline14, IconChevronUpOutline14,
-  IconEditOutline16, IconPlusOutline16, IconTrashOutline16,
+  IconCloseOutline16, IconEditOutline16, IconPlusOutline16, IconTrashOutline16,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import { namespaceValueOf } from './settings-view.ts'
 
@@ -467,35 +467,67 @@ export function ProviderListEditor(props: ProviderListEditorProps) {
             </span>
           </div>
           <span style={layout.rowMeta}>{provider.baseURL} · {provider.model}</span>
-          {editingId === provider.id && editing !== undefined
-            && renderEditor(editing, next => patch(editing.id, next))}
         </div>
       ))}
 
-      {addDraft !== null
-        && renderEditor(addDraft, next => setAddDraft(current => ({ ...current, ...next } as ProviderDraft)))}
+      {/* 编辑/添加渠道 → 弹窗 */}
+      {(editingId !== null || addDraft !== null) && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: 24,
+        }} onClick={() => closeEditor()}>
+          <div style={{
+            width: '100%', maxWidth: 560, maxHeight: '80vh', overflowY: 'auto',
+            background: 'var(--dsw-alias-bg-layer-3)',
+            border: '1px solid var(--dsw-alias-border-l2)',
+            borderRadius: 12,
+            padding: '16px 18px',
+            display: 'flex', flexDirection: 'column', gap: 12,
+          }} onClick={event => event.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: 'var(--dsw-alias-label-primary)' }}>
+                {addDraft !== null ? t('settings.provider.add') : t('settings.provider.edit')}
+              </h3>
+              <Button variant="ghost" size="sm" aria-label="关闭" onClick={() => closeEditor()}>
+                <IconCloseOutline16 />
+              </Button>
+            </div>
+            {addDraft !== null
+              ? renderEditor(addDraft, next => setAddDraft(current => ({ ...current, ...next } as ProviderDraft)))
+              : editing !== undefined && renderEditor(editing, next => patch(editing.id, next))}
+            <div style={layout.footer}>
+              <Button variant="primary" disabled={saving} onClick={() => void save()}>
+                {t('settings.save')}
+              </Button>
+              <Button variant="ghost" disabled={saving} onClick={() => closeEditor()}>
+                {t('settings.cancel')}
+              </Button>
+              {editingId !== null && (
+                <Button variant="ghost" size="sm"
+                  style={{ marginLeft: 'auto', color: 'var(--dsw-alias-state-error-primary)' }}
+                  aria-label={t('settings.provider.remove')}
+                  onClick={() => { if (editingId !== null && window.confirm('确定删除该提供商吗？')) { remove(editingId); closeEditor() } }}
+                >
+                  {t('settings.provider.remove')}
+                </Button>
+              )}
+              {notice !== null && (
+                <span style={notice.kind === 'saved' ? layout.saved : layout.error}>{notice.text}</span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div style={layout.footer}>
-        {addDraft === null && editingId === null ? (
-          <Button
-            variant="ghost" icon={<IconPlusOutline16 />}
-            onClick={() => setAddDraft({ id: newProviderId(), name: '', baseURL: '', model: '', enabled: true })}
-          >
-            {t('settings.provider.add')}
-          </Button>
-        ) : (
-          <>
-            <Button variant="primary" disabled={saving} onClick={() => void save()}>
-              {t('settings.save')}
-            </Button>
-            <Button variant="ghost" disabled={saving} onClick={() => closeEditor()}>
-              {t('settings.cancel')}
-            </Button>
-          </>
-        )}
-        {notice !== null && (
-          <span style={notice.kind === 'saved' ? layout.saved : layout.error}>{notice.text}</span>
-        )}
+        <Button
+          variant="ghost" icon={<IconPlusOutline16 />}
+          onClick={() => setAddDraft({ id: newProviderId(), name: '', baseURL: '', model: '', enabled: true })}
+        >
+          {t('settings.provider.add')}
+        </Button>
       </div>
     </div>
   )
