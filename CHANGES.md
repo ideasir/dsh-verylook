@@ -22,6 +22,9 @@ Look 插件渠道编辑原本是"当前页面内嵌展开"（点渠道卡片在�
 - tsdown 构建通过（lib/client.js 182KB）
 - 部署产物确认含弹窗代码（position:fixed）、关闭图标、删除确认
 
+### 补充（同日）
+- ChatMinimap 消息导航：悬停刻度的消息预览提示框右移 20px（clientX +16 → +36）
+
 
 ## 2026-08-25 v0825-0.1.1-rc.2 会话Header复制按钮 + typert.host.js补全
 

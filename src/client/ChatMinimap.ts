@@ -167,7 +167,7 @@ function setup(scrollEl: HTMLElement): void {
         tip.style.display = 'block'
       })
       hit.addEventListener('mousemove', (ev) => {
-        tip.style.left = `${Math.min(ev.clientX + 16, window.innerWidth - 300)}px`
+        tip.style.left = `${Math.min(ev.clientX + 36, window.innerWidth - 300)}px`
         tip.style.top = `${Math.max(8, ev.clientY - 18)}px`
       })
       hit.addEventListener('mouseleave', () => {
