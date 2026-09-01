@@ -1,5 +1,5 @@
 /**
- * Type-level extension points for dsh-looklook.
+ * Type-level extension points for dsh-verylook.
  *
  * The zero-patch architecture registers NO harness events (no image
  * admission, no request rewriting), so no `@deepseek-ai/cordis` Events

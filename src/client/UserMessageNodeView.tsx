@@ -1,5 +1,5 @@
 /**
- * LooklookUserMessageNodeView — replaces the default user-message bubble so
+ * VerylookUserMessageNodeView — replaces the default user-message bubble so
  * the chat renders the ORIGINAL image the user sent, even though the session
  * record only carries the plugin's rewritten text (rc.6 rewrites the record).
  *
@@ -7,7 +7,7 @@
  * portrait → width 220 (aspect-preserving, never upscaled). Click opens the
  * native lightbox. The host embeds a full image-reference JSON in the marker
  * 「【附图:{...}】」 and wraps its model-facing tool-reference text in
- * 「【looklook:开始】…【looklook:结束】」 (hidden from the user). Defensive:
+ * 「【verylook:开始】…【verylook:结束】」 (hidden from the user). Defensive:
  * unexpected shapes fall back to plain text, never crashing the chat.
  */
 
@@ -22,16 +22,16 @@ import { VideoPlayer } from './video-player.tsx'
 const IMAGE_MARKER_RE = /【附图:([^】]+)】/g
 
 /** Host hide delimiters: strip everything between them before display. */
-const HIDE_START = '【looklook:开始】'
-const HIDE_END = '【looklook:结束】'
+const HIDE_START = '【verylook:开始】'
+const HIDE_END = '【verylook:结束】'
 
-/** Host file marker: 「【looklook:file】{json}【looklook:file】」. */
-const FILE_MARKER_RE = /【looklook:file】([\s\S]*?)【looklook:file】/g
+/** Host file marker: 「【verylook:file】{json}【verylook:file】」. */
+const FILE_MARKER_RE = /【verylook:file】([\s\S]*?)【verylook:file】/g
 
 /** Clean upload note written by the current client:
- *  「[类型]name【looklook:file】{json}【looklook:file】」.
+ *  「[类型]name【verylook:file】{json}【verylook:file】」.
  *  Runs BEFORE FILE_MARKER_RE so the whole note is consumed as one unit. */
-const CLEAN_NOTE_RE = /\[(图片|视频|压缩包|文档|文件|音频|代码|文件)\]([^\n]*?)【looklook:file】(\{[^}]*\})【looklook:file】/g
+const CLEAN_NOTE_RE = /\[(图片|视频|压缩包|文档|文件|音频|代码|文件)\]([^\n]*?)【verylook:file】(\{[^}]*\})【verylook:file】/g
 
 /** One staged file's metadata embedded in the marker. */
 interface FileMeta {
@@ -200,7 +200,7 @@ function thumbSize(width?: number, height?: number): { width: number; height: nu
 }
 
 /** One fixed-size thumbnail with click-to-open lightbox. */
-function LooklookThumb({ attachment, load }: { attachment: ImageAttachmentRef; load: ImageLoader }) {
+function VerylookThumb({ attachment, load }: { attachment: ImageAttachmentRef; load: ImageLoader }) {
   // NOTE: the prop is deliberately NOT named `ref` — React intercepts `ref`
   // as a special prop and the value never arrives, crashing the renderer.
   const [src, setSrc] = useState<string | null>(null)
@@ -321,7 +321,7 @@ interface UserMessageNodeProps {
  * File metadata comes from the global fileRegistry (current session) or
  * fallback FILE_MARKER_RE parsing (historical messages).
  */
-export function LooklookUserMessageNodeView(props: UserMessageNodeProps) {
+export function VerylookUserMessageNodeView(props: UserMessageNodeProps) {
   const content = props.node?.data?.content
   if (!Array.isArray(content)) {
     const fallback = (content as { text?: unknown } | null | undefined)?.text
@@ -441,7 +441,7 @@ export function LooklookUserMessageNodeView(props: UserMessageNodeProps) {
       )}
       {uniqueAttachments.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'flex-end' }}>
-          {uniqueAttachments.map((item) => <LooklookThumb key={item.attachmentId} attachment={item} load={load} />)}
+          {uniqueAttachments.map((item) => <VerylookThumb key={item.attachmentId} attachment={item} load={load} />)}
         </div>
       )}
       {trimmed.length > 0 && (

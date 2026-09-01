@@ -1,5 +1,5 @@
 /**
- * dsh-looklook/ffmpeg — thin wrapper around the system ffmpeg/ffprobe for
+ * dsh-verylook/ffmpeg — thin wrapper around the system ffmpeg/ffprobe for
  * video understanding:
  * - probe a video's streams (duration, audio presence, subtitle tracks);
  * - extract frames for the vision model (L1 画面);
@@ -127,7 +127,7 @@ export async function extractFrames(path: string, maxFrames = 8): Promise<{ fram
   const probe = await probeVideo(path)
   const duration = probe.duration
   const count = duration > 0 ? Math.min(maxFrames, Math.max(1, Math.floor(duration))) : 1
-  const tempDir = await mkdtemp(join(tmpdir(), 'looklook-frames-'))
+  const tempDir = await mkdtemp(join(tmpdir(), 'verylook-frames-'))
   try {
     if (duration <= 0 || count <= 1) {
       // Unknown duration / single frame: grab one frame at 0.1s.
@@ -155,7 +155,7 @@ export async function extractFrames(path: string, maxFrames = 8): Promise<{ fram
  * models expect). Returns the temp file path; the caller owns cleanup.
  */
 export async function extractAudio(path: string): Promise<{ wavPath: string; tempDir: string }> {
-  const tempDir = await mkdtemp(join(tmpdir(), 'looklook-audio-'))
+  const tempDir = await mkdtemp(join(tmpdir(), 'verylook-audio-'))
   const wavPath = join(tempDir, 'audio.wav')
   try {
     await run(FFMPEG, ['-y', '-i', path, '-vn', '-acodec', 'pcm_s16le', '-ar', '16000', '-ac', '1', wavPath], 120_000)
@@ -174,7 +174,7 @@ export async function extractAudio(path: string): Promise<{ wavPath: string; tem
 export async function extractSubtitles(path: string): Promise<SubtitleCue[]> {
   const probe = await probeVideo(path)
   if (!probe.hasSubtitles) return []
-  const tempDir = await mkdtemp(join(tmpdir(), 'looklook-subs-'))
+  const tempDir = await mkdtemp(join(tmpdir(), 'verylook-subs-'))
   const srtPath = join(tempDir, 'out.srt')
   try {
     await run(FFMPEG, ['-y', '-i', path, '-map', '0:s:0', srtPath], 60_000)

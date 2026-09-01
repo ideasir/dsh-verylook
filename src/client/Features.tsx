@@ -1,5 +1,5 @@
 /**
- * LooklookFeaturesSection: 改版后的设置面板主体。
+ * VerylookFeaturesSection: 改版后的设置面板主体。
  * - 主开关「开关插件」
  * - 功能检测区：标题「功能检测」+「全部检测」按钮 + 6 行检测项
  *   （识别图像 / 识别视频 / 识别声音 / 识别 PSD / 识别 Office / 支持视频平台）
@@ -20,8 +20,8 @@ import type { CapabilityItem, CapabilityReport } from './upload-shared.ts'
 export interface FeaturesInjected {
   /** The wire API client. */
   api: IApiClient
-  /** Bound translate for the `looklook` namespace. */
-  t: TranslateNS<'looklook'>
+  /** Bound translate for the `verylook` namespace. */
+  t: TranslateNS<'verylook'>
   /** Feature controller (master switch). */
   features: FeatureController
   /** Reactive snapshot of the master switch. */
@@ -215,7 +215,7 @@ function CapabilityCheckDialog({ report, error, onClose }: {
 }
 
 /** The plugin-card body: master switch + capability check list. */
-export function LooklookFeaturesSection(props: FeaturesInjected) {
+export function VerylookFeaturesSection(props: FeaturesInjected) {
   const { t, features, useFeatures, capabilityCheck } = props
   const state = useFeatures()
   const ready = state.status === 'ready'

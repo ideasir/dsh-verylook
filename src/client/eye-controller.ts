@@ -8,8 +8,8 @@
  * retry after a short delay instead of defaulting to unconfigured=true.
  */
 
-import type { SnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
-import { createSnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
+import type { SnapshotStore } from './snapshot-store.ts'
+import { createSnapshotStore } from './snapshot-store.ts'
 import type { PluginSettingsClient } from './plugin-settings.ts'
 import { namespaceValueOf } from './settings-view.ts'
 

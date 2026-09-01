@@ -1,5 +1,5 @@
 /**
- * dsh-looklook/env-check — environment self-check for the plugin's external
+ * dsh-verylook/env-check — environment self-check for the plugin's external
  * dependencies, plus one-click repair for the pieces that can be fixed from
  * inside the plugin (Python packages). System-level installs (Python itself,
  * ffmpeg) are reported with concrete guidance instead of being auto-installed.

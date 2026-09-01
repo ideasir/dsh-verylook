@@ -1,8 +1,8 @@
-# Contributing to Look Look
+# Contributing to VeryLook
 
 ## 项目架构
 
-Look Look 是一个 DSH 插件，由两部分组成：
+VeryLook 是一个 DSH 插件，由两部分组成：
 
 - **宿主（host）**：Python 执行环境交互、文件存储、AI 视觉/音频/视频处理、工具注册。代码在 `src/*.ts`，编译为 `lib/*.js`。
 - **客户端（client）**：浏览器端 UI—文件拖拽/粘贴上传、输入框挂件、消息气泡渲染。代码在 `src/client/*.tsx`，由 `tsdown` 打包为 `lib/client.js`。
@@ -17,13 +17,13 @@ src/client/index.ts (apply) → 注册 slot、事件、RPC 调用
 ## 目录结构
 
 ```
-dsh-looklook/
+dsh-verylook/
 ├── src/                    # 宿主源码（TypeScript）
 │   ├── index.ts            # 插件入口，注册 host 服务与工具
-│   ├── see-tool.ts         # 「looklook_see」工具（图片/视频/zip/文档）
+│   ├── see-tool.ts         # 「verylook_see」工具（图片/视频/zip/文档）
 │   ├── upload.ts           # 文件上传存储（saveUpload）
 │   ├── remote.ts           # RPC 服务（同步设置、环境检查、模态查询）
-│   ├── looklook-skill.ts   # 注入给模型的系统提示词
+│   ├── verylook-skill.ts   # 注入给模型的系统提示词
 │   ├── doc-tool.ts         # 文档解析（PDF/Word/Excel/PPT）
 │   ├── video-tool.ts       # 视频分析
 │   ├── zip-tool.ts         # ZIP 压缩包操作
@@ -60,7 +60,7 @@ dsh-looklook/
 │   ├── *.js / *.d.ts       # 宿主编译产物
 │   └── types/              # 类型声明
 │
-├── skills/looklook/SKILL.md  # 注入给模型的技能提示
+├── skills/verylook/SKILL.md  # 注入给模型的技能提示
 ├── scripts/                # 构建辅助脚本
 ├── tests/                  # 验证脚本
 ├── CHANGELOG.md
@@ -70,7 +70,7 @@ dsh-looklook/
 ├── tsconfig.json           # 宿主 TypeScript 配置
 ├── tsconfig.client.json    # 客户端 TypeScript 配置
 ├── tsdown.config.ts        # 客户端 bundle 打包配置
-└── cordis.patch.yml        # 补丁配置（仅用于旧版 dsh-looklook-src）
+└── cordis.patch.yml        # 补丁配置（仅用于旧版 dsh-verylook-src）
 ```
 
 ## 开发环境搭建
@@ -85,8 +85,8 @@ dsh-looklook/
 
 ```bash
 # 克隆仓库
-git clone https://github.com/ideasir/dsh-looklook.git
-cd dsh-looklook
+git clone https://github.com/ideasir/dsh-verylook.git
+cd dsh-verylook
 
 # 安装依赖
 pnpm install
@@ -95,7 +95,7 @@ pnpm install
 npm run build
 
 # 安装到 DSH 的 web profile
-dsh plugin --profile web add github:ideasir/dsh-looklook
+dsh plugin --profile web add github:ideasir/dsh-verylook
 ```
 
 > 热重载：修改 `src/client/*` 后执行 `npm run build` 并刷新浏览器；修改 `src/*.ts` 后需要重启 `dsh web`。
@@ -104,8 +104,8 @@ dsh plugin --profile web add github:ideasir/dsh-looklook
 
 ```bash
 # 构建产物后，手动同步到安装目录
-cp lib/client.js /root/.dsh/profiles/web/node_modules/dsh-looklook/lib/
-cp lib/index.js /root/.dsh/profiles/web/node_modules/dsh-looklook/lib/
+cp lib/client.js /root/.dsh/profiles/web/node_modules/dsh-verylook/lib/
+cp lib/index.js /root/.dsh/profiles/web/node_modules/dsh-verylook/lib/
 # 然后在浏览器 CTRL+SHIFT+R 刷新（客户端）或重启 dsh web（宿主）
 ```
 
@@ -154,8 +154,8 @@ v0.2.0 格式（历史）：
   上传了文件：image_abc123.png
 
 v0.1.x 格式（已废弃）：
-  【looklook:开始】上传了文件：image.png【looklook:结束】
-  【looklook:file】{"name":"image.png","path":"...","size":12345}【looklook:file】
+  【verylook:开始】上传了文件：image.png【verylook:结束】
+  【verylook:file】{"name":"image.png","path":"...","size":12345}【verylook:file】
 ```
 
 ### 排队气泡 → 定稿气泡
@@ -166,7 +166,7 @@ v0.1.x 格式（已废弃）：
   → DSH 的 PendingSteeringBubble 渲染，纯文本
 
 定稿后（settled）：
-  LooklookUserMessageNodeView 接管渲染
+  VerylookUserMessageNodeView 接管渲染
   → CLEAN_NOTE_RE 正则匹配「[图片]xxx 排队中...」
   → 提取文件名 → loadUpload RPC → 显示缩略图卡片
   → 若请求失败，降级为 FileCard（文件图标 + 文件名）
@@ -175,7 +175,7 @@ v0.1.x 格式（已废弃）：
 ### 工具注册
 
 ```
-looklook_see（见 see-tool.ts）：
+verylook_see（见 see-tool.ts）：
   注册为 DSH 工具 → 模型可调用
   接收 source + question 参数
   source 自动解析：裸文件名 → 拼接 session/.uploads/ 路径
@@ -197,7 +197,7 @@ looklook_see（见 see-tool.ts）：
   timestamp = Date.now().toString(36)  // 6-7 字符
 ```
 
-避免同名文件互相覆盖。消息注记中显示的是唯一名，模型通过 `looklook_see("唯一名")` 直接定位。
+避免同名文件互相覆盖。消息注记中显示的是唯一名，模型通过 `verylook_see("唯一名")` 直接定位。
 
 ## 发布流程
 
@@ -217,7 +217,7 @@ git commit -m "feat: 说明"
 git push origin main
 
 # 5. 用户安装
-dsh plugin --profile web add github:ideasir/dsh-looklook
+dsh plugin --profile web add github:ideasir/dsh-verylook
 ```
 
 ## 测试

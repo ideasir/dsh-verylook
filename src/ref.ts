@@ -1,5 +1,5 @@
 /**
- * Unified content references for dsh-looklook ("look at anything").
+ * Unified content references for dsh-verylook ("look at anything").
  *
  * The plugin turns whatever the user sends — images today, archives, and
  * later PDFs / documents / spreadsheets — into a reference the main model

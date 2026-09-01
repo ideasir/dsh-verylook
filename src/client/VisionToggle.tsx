@@ -14,8 +14,8 @@ export interface VisionToggleInjected {
   controller: EyeController
   /** Snapshot selector bound to the controller store. */
   useSnapshot: (selector: (state: EyeController['store']['getSnapshot'] extends () => infer S ? S : never) => unknown) => unknown
-  /** Bound translate for the `looklook` namespace. */
-  t: TranslateNS<'looklook'>
+  /** Bound translate for the `verylook` namespace. */
+  t: TranslateNS<'verylook'>
   /** Reactive plugin master switch (false hides the eye entirely). */
   usePluginEnabled: () => boolean
 }
@@ -77,7 +77,7 @@ export function VisionToggle(
       title={label}
       aria-label={label}
       aria-pressed={active}
-      data-looklook-eye={visual}
+      data-verylook-eye={visual}
       onClick={() => controller.toggle(eye === 'on' ? 'off' : 'on')}
       style={{
         display: 'grid',

@@ -1,5 +1,5 @@
 /**
- * Plugin master-switch controller: reads the `looklook` settings namespace
+ * Plugin master-switch controller: reads the `verylook` settings namespace
  * (`enabled`) through the wire settings API. One switch controls the whole
  * plugin — ON (default) = every capability enabled; OFF = plugin dormant and
  * DSH behaves as without it.
@@ -9,8 +9,8 @@
  * mounts within ~500ms on a fresh page load.
  */
 
-import type { SnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
-import { createSnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
+import type { SnapshotStore } from './snapshot-store.ts'
+import { createSnapshotStore } from './snapshot-store.ts'
 import type { PluginSettingsClient } from './plugin-settings.ts'
 import { namespaceValueOf } from './settings-view.ts'
 
@@ -19,8 +19,8 @@ export type FeatureState =
   | { status: 'loading' }
   | { status: 'ready'; enabled: boolean }
 
-/** The `looklook` settings namespace value as read through the wire. */
-interface LooklookSettingsView {
+/** The `verylook` settings namespace value as read through the wire. */
+interface VerylookSettingsView {
   enabled?: boolean
 }
 
@@ -44,14 +44,14 @@ export function createFeatureController(api: PluginSettingsClient): FeatureContr
       retryTimer = window.setTimeout(() => void refresh(), 600)
       return
     }
-    const value = namespaceValueOf(response.namespaces, 'looklook') as LooklookSettingsView | undefined
+    const value = namespaceValueOf(response.namespaces, 'verylook') as VerylookSettingsView | undefined
     store.set({
       status: 'ready',
       enabled: value?.enabled !== false,
     })
   }
   const update = async (patch: Record<string, boolean>): Promise<void> => {
-    await api.update('looklook', patch)
+    await api.update('verylook', patch)
     void refresh()
   }
   return {

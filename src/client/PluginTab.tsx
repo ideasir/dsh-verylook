@@ -1,5 +1,5 @@
 /**
- * LooklookPluginCard: the looklook configuration card inside the Plugins
+ * VerylookPluginCard: the verylook configuration card inside the Plugins
  * settings section's "插件配置" tab (`settings.plugin.item`). Uses the same
  * collapsible card chrome as the agent-loop / bash / web-search cards:
  * a header (title + description + chevron) that discloses:
@@ -13,7 +13,7 @@ import type { TranslateNS } from '@deepseek-ai/dsh-client-ui-slots'
 import type { PluginSettingsClient } from './plugin-settings.ts'
 import { Button, IconChevronDownOutline14 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { FeatureController, FeatureState } from './feature-controller.ts'
-import { LooklookFeaturesSection, type FeaturesInjected } from './Features.tsx'
+import { VerylookFeaturesSection, type FeaturesInjected } from './Features.tsx'
 import { ModelSettingsSection, type ModelSettingsInjected } from './VisionSettings.tsx'
 import { EnvCheckDialog, type EnvCheckInjected } from './EnvCheck.tsx'
 import type { EnvCheckItem, EnvCheckReport, CapabilityReport } from './upload-shared.ts'
@@ -22,13 +22,13 @@ import type { EnvCheckItem, EnvCheckReport, CapabilityReport } from './upload-sh
 const EyeSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>'
 
 /** Injected face supplied by the plugin apply closure. */
-export interface LooklookCardInjected {
+export interface VerylookCardInjected {
   /** The wire API client for model discovery. */
   api: IApiClient
   /** Plugin-owned settings and credential RPCs. */
   pluginSettings: PluginSettingsClient
-  /** Bound translate for the `looklook` namespace. */
-  t: TranslateNS<'looklook'>
+  /** Bound translate for the `verylook` namespace. */
+  t: TranslateNS<'verylook'>
   /** Feature controller (image / video toggles). */
   features: FeatureController
   /** Reactive snapshot of the feature switches. */
@@ -95,7 +95,7 @@ const css = {
 } as const
 
 /** The plugin-configuration card body. */
-export function LooklookPluginCard(props: LooklookCardInjected) {
+export function VerylookPluginCard(props: VerylookCardInjected) {
   const { api, pluginSettings, t, features, useFeatures, listModels, testVision, testAudio, envCheck, envRepair, capabilityCheck, getPluginVersion, checkUpdate, uninstallPlugin, usePluginEnabled } = props
   const [open, setOpen] = useState(false)
   const [envOpen, setEnvOpen] = useState(false)
@@ -123,7 +123,7 @@ export function LooklookPluginCard(props: LooklookCardInjected) {
 
   const handleUninstall = (): void => {
     if (uninstalling) return
-    if (!window.confirm('确定卸载 Look Look 插件吗？\n\n将从 DSH 中移除插件本体和全部配置。')) return
+    if (!window.confirm('确定卸载 VeryLook 插件吗？\n\n将从 DSH 中移除插件本体和全部配置。')) return
     setUninstalling(true)
     setFeedback(null)
     void (async () => {
@@ -175,7 +175,7 @@ export function LooklookPluginCard(props: LooklookCardInjected) {
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flex: 'none' }}>
           {/* ideasir 直达仓库 */}
           <a
-            href="https://github.com/ideasir/dsh-looklook"
+            href="https://github.com/ideasir/dsh-verylook"
             target="_blank"
             rel="noreferrer"
             onClick={(event) => event.stopPropagation()}
@@ -241,7 +241,7 @@ export function LooklookPluginCard(props: LooklookCardInjected) {
               event.stopPropagation()
               // 有更新时跳转到仓库（安装/更新指引）；无更新时重新检查
               if (hasUpdate) {
-                window.open('https://github.com/ideasir/dsh-looklook', '_blank', 'noreferrer')
+                window.open('https://github.com/ideasir/dsh-verylook', '_blank', 'noreferrer')
               } else {
                 refreshMeta()
               }
@@ -292,7 +292,7 @@ export function LooklookPluginCard(props: LooklookCardInjected) {
               {feedback}
             </p>
           )}
-          <LooklookFeaturesSection {...featuresProps} />
+          <VerylookFeaturesSection {...featuresProps} />
           {pluginEnabled && (
             <>
               <div style={{ border: 'none', borderTop: '1px solid var(--dsw-alias-border-l2)' }} />

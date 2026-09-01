@@ -1,5 +1,5 @@
 /**
- * dsh-looklook/zip — ZIP file processing core (vendored from @ideasir/dsh-zip).
+ * dsh-verylook/zip — ZIP file processing core (vendored from @ideasir/dsh-zip).
  *
  * Provides ZipStore class with extract, list, and read-entry operations.
  * Each ZIP extraction is placed in a dedicated directory:

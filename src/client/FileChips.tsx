@@ -16,7 +16,7 @@ import { VideoPlayer } from './video-player.tsx'
 
 /** Injected face supplied by the plugin apply closure. */
 export interface FileChipsInjected {
-  t: TranslateNS<'looklook'>
+  t: TranslateNS<'verylook'>
   pending: PendingFilesController
   usePending: (selector: (state: PendingFilesState) => unknown) => unknown
   sessionId: string
@@ -58,7 +58,7 @@ export function FileChips(props: FileChipsInjected) {
 
   return (
     <>
-    <style>{`@keyframes looklook-spin { to { transform: rotate(360deg); } }`}</style>
+    <style>{`@keyframes verylook-spin { to { transform: rotate(360deg); } }`}</style>
     <div
       style={{
         boxSizing: 'border-box',
@@ -120,7 +120,7 @@ export function FileChips(props: FileChipsInjected) {
                 width: '100%',
                 height: '100%',
               }}>
-                <svg width="100%" height="100%" viewBox="0 0 28 28" fill="none" aria-hidden="true" style={{ position: 'absolute', animation: 'looklook-spin 0.8s linear infinite' }}>
+                <svg width="100%" height="100%" viewBox="0 0 28 28" fill="none" aria-hidden="true" style={{ position: 'absolute', animation: 'verylook-spin 0.8s linear infinite' }}>
                   <circle cx="14" cy="14" r="11" stroke="var(--dsw-alias-border-l3)" strokeWidth="2.5" />
                   <circle cx="14" cy="14" r="11" stroke="var(--dsw-alias-brand-primary)" strokeWidth="2.5" strokeLinecap="round"
                     strokeDasharray={`${2 * Math.PI * 11}`}

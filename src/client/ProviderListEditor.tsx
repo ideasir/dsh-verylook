@@ -1,6 +1,6 @@
 /**
  * ProviderListEditor — a reusable provider-list editor (primary + fallbacks,
- * failover order) for one settings namespace. Used by the looklook card for
+ * failover order) for one settings namespace. Used by the verylook card for
  * both the vision model list and the audio model list.
  *
  * Edits are draft-local until Save, which writes credentials (per-provider
@@ -36,7 +36,7 @@ export interface ProviderDraft {
 /** Derive a credential reference for one provider id. */
 export function credentialRefFor(id: string): string {
   const safe = id.toUpperCase().replace(/[^A-Z0-9]/g, '_')
-  return `LOOKLOOK_${safe}_API_KEY`
+  return `VERYLOOK_${safe}_API_KEY`
 }
 
 /** Injected face for one provider-list editor. */
@@ -45,9 +45,9 @@ export interface ProviderListEditorProps {
   api: IApiClient
   /** Plugin-owned settings and credential RPCs. */
   pluginSettings: PluginSettingsClient
-  /** Bound translate for the `looklook` namespace. */
-  t: TranslateNS<'looklook'>
-  /** Settings namespace to read/write (e.g. 'vision', 'looklook-audio'). */
+  /** Bound translate for the `verylook` namespace. */
+  t: TranslateNS<'verylook'>
+  /** Settings namespace to read/write (e.g. 'vision', 'verylook-audio'). */
   ns: string
   /** Section title (e.g. "视觉模型" / "音频模型"). */
   title: string
@@ -342,11 +342,11 @@ export function ProviderListEditor(props: ProviderListEditorProps) {
         <label style={layout.fieldLabel}>{t('settings.provider.model')}</label>
         <input
           style={layout.input}
-          list={`looklook-models-${draft.id}`}
+          list={`verylook-models-${draft.id}`}
           value={draft.model} placeholder={t('settings.provider.modelHint')}
           onChange={event => onPatch({ model: event.target.value })}
         />
-        <datalist id={`looklook-models-${draft.id}`}>
+        <datalist id={`verylook-models-${draft.id}`}>
           {(fetchedModels[draft.id] ?? []).map(model => (
             <option key={model} value={model} />
           ))}

@@ -1,20 +1,20 @@
-# dsh-looklook — look-at-anything plugin layer.
+# dsh-verylook — look-at-anything plugin layer.
 #
-# Installed as a bundle: `dsh plugin --profile <name> add dsh-looklook`.
+# Installed as a bundle: `dsh plugin --profile <name> add dsh-verylook`.
 #
 # Zero-patch architecture: the plugin exposes its settings namespaces through
 # `llm.registerConfigurableProviders()` (api-proxy serves those automatically),
-# routes dropped files through the authorized `remote.looklook.upload` RPC into
+# routes dropped files through the authorized `remote.verylook.upload` RPC into
 # the session `.uploads/`, and NEVER touches the native attachment pipeline or
 # any `@deepseek-ai/*` source file. No prompt admission, no request rewriting,
 # no harness patches — nothing here overrides DSH behavior beyond this row.
 #
 # Configuration defaults live in the row config below; the user layer in the
-# `looklook` / `vision` / `looklook-audio` settings namespaces overrides them
+# `verylook` / `vision` / `verylook-audio` settings namespaces overrides them
 # at runtime (hot reload).
 - insert:
-    - id: looklook
-      name: dsh-looklook
+    - id: verylook
+      name: dsh-verylook
       config:
         providers: []
         sessionOverrides: {}

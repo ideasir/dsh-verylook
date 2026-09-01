@@ -1,5 +1,5 @@
 /**
- * Shared Python runtime detection for dsh-looklook.
+ * Shared Python runtime detection for dsh-verylook.
  *
  * The video worker both spawn Python. The executable
  * name differs across environments (python3 on most Linux/macOS, `python` on
@@ -69,9 +69,9 @@ export function resetPythonDetection(): void {
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 
-/** The plugin's isolated venv root: $DSH_HOME/looklook-venv. */
+/** The plugin's isolated venv root: $DSH_HOME/verylook-venv. */
 const DSH_HOME = process.env.DSH_HOME ?? join(homedir(), '.dsh')
-export const VENV_DIR = join(DSH_HOME, 'looklook-venv')
+export const VENV_DIR = join(DSH_HOME, 'verylook-venv')
 
 /**
  * Create (once) the plugin's isolated venv and return its python executable.

@@ -1,6 +1,6 @@
 /**
- * dsh-looklook/upload — host-side upload support, exposed as a Remote RPC
- * (wire namespace `looklook`, method `upload`).
+ * dsh-verylook/upload — host-side upload support, exposed as a Remote RPC
+ * (wire namespace `verylook`, method `upload`).
  *
  * The client uploads every intercepted file (image, archive, video) through
  * this RPC, which rides the authorized api-proxy connection — there is no

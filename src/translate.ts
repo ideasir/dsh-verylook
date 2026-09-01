@@ -3,7 +3,7 @@
  *
  * Pseudo-native multimodal: the plugin does NOT translate images up front.
  * It replaces each image with a machine-readable image reference the MAIN
- * MODEL can pass to the `looklook_see` tool, plus an attachment marker
+ * MODEL can pass to the `verylook_see` tool, plus an attachment marker
  * so the plugin's client renders the original image in the chat. The main
  * model decides what to ask the vision model (targeted question or full
  * description, based on the user's question) — no hardcoded rules here.
@@ -24,8 +24,8 @@ export const IMAGE_MARKER_PREFIX = '【附图:'
 export const IMAGE_MARKER_SUFFIX = '】'
 
 /** Hide delimiters: the client strips everything between these two markers. */
-export const HIDE_START = '【looklook:开始】'
-export const HIDE_END = '【looklook:结束】'
+export const HIDE_START = '【verylook:开始】'
+export const HIDE_END = '【verylook:结束】'
 
 /** Compose the attachment marker appended to the model-visible text. The
  * marker carries the full image reference JSON so the client can render the
@@ -36,7 +36,7 @@ export function imageMarker(ref: ImageAttachmentRef): string {
 
 /**
  * Build the model-visible text for one image: a hidden-from-display tool
- * reference (the main model uses it to call `looklook_see`) plus the
+ * reference (the main model uses it to call `verylook_see`) plus the
  * visible attachment marker that makes the client render the image.
  */
 export function buildImageToolReference(image: ImageBlock): string {
@@ -44,9 +44,9 @@ export function buildImageToolReference(image: ImageBlock): string {
   return [
     HIDE_START,
     '用户发来一张图片，图片内容对你不可见。',
-    '图片引用（请原样填入 looklook_see 工具的 source 参数，不要改动）:',
+    '图片引用（请原样填入 verylook_see 工具的 source 参数，不要改动）:',
     imageRefJson(ref),
-    '要回答与这张图片相关的任何问题，你必须先调用 looklook_see 工具查看图片。',
+    '要回答与这张图片相关的任何问题，你必须先调用 verylook_see 工具查看图片。',
     HIDE_END,
     imageMarker(ref),
   ].join('\n')

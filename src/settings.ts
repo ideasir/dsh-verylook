@@ -1,11 +1,11 @@
 /**
- * dsh-looklook settings: the plugin master switch and model configurations.
+ * dsh-verylook settings: the plugin master switch and model configurations.
  *
  * One OpenAI-compatible vision model slot drives image/video-frame
  * recognition; one audio slot drives transcript + sound understanding
  * (L2+L3 merged — the plugin probes the model's capability automatically).
  *
- * The master switch (`looklook.enabled`):
+ * The master switch (`verylook.enabled`):
  * - ON (default): every capability works.
  * - OFF: plugin dormant, DSH behaves as without it (not uninstalled).
  *
@@ -20,7 +20,7 @@ import type { SettingsScope } from '@deepseek-ai/dsh-settings'
 /**
  * Plugin-level master switch. One switch controls the whole plugin:
  * - ON (default): every capability is enabled — image/video/file recognition
- *   through the file channel, the looklook_see tool, upload channel.
+ *   through the file channel, the verylook_see tool, upload channel.
  * - OFF: the plugin is NOT uninstalled but is dormant — nothing is
  *   intercepted, the see tool answers "已关闭", and DSH behaves exactly as
  *   if the plugin were absent.
@@ -30,20 +30,20 @@ import type { SettingsScope } from '@deepseek-ai/dsh-settings'
  * is no point in per-feature toggles (识别图像 / 识别视频) — either the
  * plugin helps (ON) or the harness is left pristine (OFF).
  */
-export interface LooklookSettings {
+export interface VerylookSettings {
   /** Master switch: OFF = plugin dormant, DSH behaves as without it. */
   enabled: boolean
 }
 
-export const LooklookConfig: Schema<LooklookSettings> = Schema.object({
+export const VerylookConfig: Schema<VerylookSettings> = Schema.object({
   enabled: Schema.boolean().default(true),
 })
 
 /** The settings owner handle for the master switch. */
-export type LooklookScope = SettingsScope<LooklookSettings>
+export type VerylookScope = SettingsScope<VerylookSettings>
 
 /** Resolve the live master switch (missing value defaults to enabled). */
-export function looklookEnabled(scope: LooklookScope): boolean {
+export function verylookEnabled(scope: VerylookScope): boolean {
   return scope.get().enabled !== false
 }
 

@@ -1,6 +1,6 @@
-### Look Look — 让 DSH 能 Look 万物
+### VeryLook — 让 DSH 能 Look 万物
 
-大家好，我做了一个 DSH 插件叫 **Look Look**（俗称撸货）。
+大家好，我做了一个 DSH 插件叫 **VeryLook**（俗称撸货）。
 
 DSH 原生只能上传图片，格式支持很有限。这个插件把"看"的能力扩展到几乎所有常见文件格式。而且不光能看文件——还能看聊天记录，让新对话 look 旧对话。
 
@@ -45,12 +45,12 @@ DSH 目前还在开发者预览阶段，版本更新较频繁，后续会持续�
 
 ## 项目截图
 
-![DSH 插件设置页](https://github.com/ideasir/dsh-looklook/raw/main/screenshots/04-settings-zh.jpg)
+![DSH 插件设置页](https://github.com/ideasir/dsh-verylook/raw/main/screenshots/04-settings-zh.jpg)
 
-![插件验证报告](https://github.com/ideasir/dsh-looklook/raw/main/screenshots/06-verification-report.jpg)
+![插件验证报告](https://github.com/ideasir/dsh-verylook/raw/main/screenshots/06-verification-report.jpg)
 
 ---
 
-**GitHub**: https://github.com/ideasir/dsh-looklook
+**GitHub**: https://github.com/ideasir/dsh-verylook
 
 有问题欢迎在 Issues 或本讨论区回复。

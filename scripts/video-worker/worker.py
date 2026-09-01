@@ -148,8 +148,8 @@ def configured_cookie_options(opts):
     Browser name is intentionally explicit (edge/chrome/firefox); a cookie
     file must be supplied by the user through an environment variable.
     """
-    browser = opts.get('cookies_browser') or os.environ.get('LOOKLOOK_COOKIES_BROWSER')
-    cookie_file = opts.get('cookies_file') or os.environ.get('LOOKLOOK_COOKIES_FILE')
+    browser = opts.get('cookies_browser') or os.environ.get('VERYLOOK_COOKIES_BROWSER')
+    cookie_file = opts.get('cookies_file') or os.environ.get('VERYLOOK_COOKIES_FILE')
     return browser or None, cookie_file or None
 
 
@@ -685,7 +685,7 @@ def main():
         return
 
     # ---- transcript: subtitles first; else leave audio for the host ASR ----
-    # The host (looklook_see tool) owns speech-to-text: it calls an
+    # The host (verylook_see tool) owns speech-to-text: it calls an
     # OpenAI-compatible /v1/audio/transcriptions endpoint with the audio file
     # this worker prepares. Subtitles (platform or embedded) are still
     # extracted here because they are free and more accurate than ASR.

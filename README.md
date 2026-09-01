@@ -1,6 +1,6 @@
-# Look Look
+# VeryLook
 
-> 当前版本 `0829-0.1.2-rc.2`，适配 DSH `v0.1.1-rc.2`（开发者预览版）。使 DeepSeek Harness 能 Look 万物——图片、视频、音频、PSD、Office 文档、PDF、压缩包，以及聊天记录。新对话能 Look 旧对话。
+> 当前版本 `0901-0.1.2-alpha.3`，适配 DSH `v0.1.1-rc.2`（开发者预览版）。使 DeepSeek Harness 能 Look 万物——图片、视频、音频、PSD、Office 文档、PDF、压缩包，以及聊天记录。新对话能 Look 旧对话。
 
 ![DSH 插件设置页](screenshots/04-settings-zh.jpg)
 ![插件验证报告](screenshots/06-verification-report.jpg)
@@ -16,8 +16,8 @@ DSH 目前还在开发者预览阶段，版本更新较频繁，每次大版本�
 从 GitHub 克隆仓库后本地构建：
 
 ```bash
-git clone https://github.com/ideasir/dsh-looklook.git
-cd dsh-looklook
+git clone https://github.com/ideasir/dsh-verylook.git
+cd dsh-verylook
 npm install
 npm run build
 ```
@@ -25,11 +25,11 @@ npm run build
 构建产物在 `lib/` 目录。把产物复制到 DSH profile 的 `node_modules` 目录：
 
 ```bash
-mkdir -p ~/.dsh/profiles/web/node_modules/dsh-looklook
-cp -r lib/* ~/.dsh/profiles/web/node_modules/dsh-looklook/lib/
+mkdir -p ~/.dsh/profiles/web/node_modules/dsh-verylook
+cp -r lib/* ~/.dsh/profiles/web/node_modules/dsh-verylook/lib/
 ```
 
-重启 DSH 即可。在设置页 Plugins → Look Look 中配置模型。
+重启 DSH 即可。在设置页 Plugins → VeryLook 中配置模型。
 
 > 插件尚未发布到 npm，需要从仓库克隆构建。
 

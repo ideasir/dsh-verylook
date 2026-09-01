@@ -1,12 +1,12 @@
 /**
- * dsh-looklook client face:
- * - the looklook entry inside the Plugins settings section (master switches +
+ * dsh-verylook client face:
+ * - the verylook entry inside the Plugins settings section (master switches +
  *   conditional vision-model config);
  * - drag-and-drop of archive/video files straight into the dialog;
  * - the per-session eye toggle and the original-image message view.
  */
 
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type { ConnectionHandle } from '@deepseek-ai/dsh-api-remotes/client'
 import { bindSnapshotSelector } from './bind-snapshot.ts'
 // Type-only: pulls the shell's SlotMap merges (settings.plugins.tab,
@@ -22,47 +22,46 @@ import { createPendingFilesController, type PendingFilesController } from './pen
 import { CopySessionIdButton, type CopySessionIdInjected } from './CopySessionIdButton.tsx'
 import { SessionHeaderCopyButton, type SessionHeaderCopyButtonProps } from './SessionHeaderCopyButton.tsx'
 import { installChatMinimap } from './ChatMinimap.ts'
-import { LooklookUserMessageNodeView } from './UserMessageNodeView.tsx'
-import { LooklookPluginCard, type LooklookCardInjected } from './PluginTab.tsx'
+import { VerylookUserMessageNodeView } from './UserMessageNodeView.tsx'
+import { VerylookPluginCard, type VerylookCardInjected } from './PluginTab.tsx'
 import { VisionToggle, type VisionToggleInjected } from './VisionToggle.tsx'
 import { FileChips, type FileChipsInjected } from './FileChips.tsx'
 import { isUploadableName, isNativeImageName, uploadFile, type SessionModality, type EnvCheckItem, type EnvCheckReport, type CapabilityItem, type CapabilityReport } from './upload-shared.ts'
-import { en, zh, type LookLookKey } from './locales.ts'
+import { en, zh, type VeryLookKey } from './locales.ts'
 import type { PluginSettingsClient } from './plugin-settings.ts'
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface LocaleNamespaceMap {
-    /** dsh-looklook copy (settings page + eye toggle + upload). */
-    looklook: LookLookKey
+    /** dsh-verylook copy (settings page + eye toggle + upload). */
+    verylook: VeryLookKey
   }
 }
 
 /** Dictionary namespace owned by this plugin. */
-const NS = 'looklook'
+const NS = 'verylook'
 
 /** Slot entry ids. */
-const PLUGIN_CARD_ID = 'looklook'
-const TOGGLE_ID = 'looklook-eye'
-const PENDING_ID = 'looklook-pending'
+const PLUGIN_CARD_ID = 'verylook'
+const TOGGLE_ID = 'verylook-eye'
+const PENDING_ID = 'verylook-pending'
 
 /** Required services: slots, locale, connection, remote, sessions, conversation. */
 export const inject = ['slots', 'locale', 'connection', 'remote', 'sessions', 'conversation']
 
 /**
- * Client plugin body: register the looklook Plugins-settings tab, the
+ * Client plugin body: register the verylook Plugins-settings tab, the
  * composer upload control, drag-and-drop of archive/video files, the eye
  * toggle, and the original-image message view.
  */
 export function apply(ctx: ClientContext): void {
-  ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'dsh-looklook: dictionaries')
+  ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'dsh-verylook: dictionaries')
   const t = ctx.locale.bind(NS)
   const connection = ctx.get('connection') as ConnectionHandle
   const sessions = ctx.get('sessions') as {
-    currentProvideInfo: { getSnapshot(): {
-      sessionId?: string
-      hooks?: Record<string, unknown>
-      props?: Record<string, unknown>
-    } | undefined; subscribe(fn: () => void): () => void }
+    list: {
+      getSnapshot(): { current?: string; byId?: Record<string, { displayTitle?: string }> }
+      subscribe(fn: () => void): () => void
+    }
     scope?(id: string): { get?(name: string): unknown } | undefined
   }
 
@@ -107,7 +106,7 @@ export function apply(ctx: ClientContext): void {
         setTimeout(() => { document.body.removeChild(el) }, 2700)
       }
       return () => { delete win.__dshShareSession }
-    }, 'dsh-looklook: session share global')
+    }, 'dsh-verylook: session share global')
   }
 
   // Pending staged files (uploaded, shown as chips, sent with Enter).
@@ -115,7 +114,7 @@ export function apply(ctx: ClientContext): void {
   const usePending = bindSnapshotSelector(pending.store)
 
   /** Compose a human-readable file note for one uploaded file.
-   *  Format: [压缩包] 文件名.zip【looklook:file】{json}【looklook:file】
+   *  Format: [压缩包] 文件名.zip【verylook:file】{json}【verylook:file】
    *  The queue bubble shows the friendly prefix; the final render
    *  parses the JSON into a file card (thumbnail / icon + tooltip). */
   const fileTypeLabel = (name: string): string => {
@@ -192,12 +191,12 @@ export function apply(ctx: ClientContext): void {
       state?: { getSnapshot(): { draft?: string } }
     } | undefined
     if (shell?.submit === undefined || shell?.setDraft === undefined || shell?.state === undefined) return
-    const raw = shell as { __looklookWrapped?: boolean }
-    if (raw.__looklookWrapped === true) {
+    const raw = shell as { __verylookWrapped?: boolean }
+    if (raw.__verylookWrapped === true) {
       patchedSessions.add(sessionId)
       return
     }
-    raw.__looklookWrapped = true
+    raw.__verylookWrapped = true
     const originalSubmit = shell.submit.bind(shell)
     const setDraft = shell.setDraft.bind(shell)
     const readDraft = (): string => shell.state?.getSnapshot()?.draft ?? ''
@@ -213,7 +212,7 @@ export function apply(ctx: ClientContext): void {
           originalSubmit(mode)
         }
       } catch (error) {
-        console.error('looklook submit merge failed:', error)
+        console.error('verylook submit merge failed:', error)
         originalSubmit(mode)
       }
     }
@@ -223,13 +222,13 @@ export function apply(ctx: ClientContext): void {
   // Patch the current session's submit whenever the session changes.
   ctx.effect(() => {
     const sync = (): void => {
-      const sessionId = sessions.currentProvideInfo.getSnapshot()?.sessionId
+      const sessionId = sessions.list.getSnapshot().current
       if (sessionId !== undefined && sessionId !== '') ensureSubmitPatched(sessionId)
     }
-    const dispose = sessions.currentProvideInfo.subscribe(sync)
+    const dispose = sessions.list.subscribe(sync)
     sync()
     return () => { dispose() }
-  }, 'dsh-looklook: submit merge patch')
+  }, 'dsh-verylook: submit merge patch')
 
   const pluginSettingsListeners = new Set<() => void>()
   const pluginSettings: PluginSettingsClient = {
@@ -238,7 +237,7 @@ export function apply(ctx: ClientContext): void {
       return () => { pluginSettingsListeners.delete(listener) }
     },
     describe: async () => {
-      const remote = ctx.get('remote.looklook') as { describeSettings?: () => Promise<{ ok: boolean; value?: { ok: boolean; value?: { namespaces?: Array<{ ns: string; value: unknown }> }; error?: string }; error?: { message?: string } }> } | undefined
+      const remote = ctx.get('remote.verylook') as { describeSettings?: () => Promise<{ ok: boolean; value?: { ok: boolean; value?: { namespaces?: Array<{ ns: string; value: unknown }> }; error?: string }; error?: { message?: string } }> } | undefined
       if (remote?.describeSettings === undefined) return { ok: false, error: '插件设置服务未就绪' }
       const envelope = await remote.describeSettings()
       const body = envelope.value
@@ -246,7 +245,7 @@ export function apply(ctx: ClientContext): void {
       return { ok: true, namespaces: body.value?.namespaces ?? [] }
     },
     update: async (ns, patch) => {
-      const remote = ctx.get('remote.looklook') as { updateSettings?: (payload: { ns: string; patch: Record<string, unknown> }) => Promise<{ ok: boolean; value?: { ok: boolean; error?: string }; error?: { message?: string } }> } | undefined
+      const remote = ctx.get('remote.verylook') as { updateSettings?: (payload: { ns: string; patch: Record<string, unknown> }) => Promise<{ ok: boolean; value?: { ok: boolean; error?: string }; error?: { message?: string } }> } | undefined
       if (remote?.updateSettings === undefined) return { ok: false, error: '插件设置服务未就绪' }
       const envelope = await remote.updateSettings({ ns, patch })
       const body = envelope.value
@@ -255,7 +254,7 @@ export function apply(ctx: ClientContext): void {
       return { ok: true }
     },
     describeCredentials: async (refs) => {
-      const remote = ctx.get('remote.looklook') as { describeCredentials?: (refs: string[]) => Promise<{ ok: boolean; value?: { ok: boolean; credentials?: Record<string, { configured: boolean; writable: boolean }>; error?: string }; error?: { message?: string } }> } | undefined
+      const remote = ctx.get('remote.verylook') as { describeCredentials?: (refs: string[]) => Promise<{ ok: boolean; value?: { ok: boolean; credentials?: Record<string, { configured: boolean; writable: boolean }>; error?: string }; error?: { message?: string } }> } | undefined
       if (remote?.describeCredentials === undefined) return { ok: false, error: '插件凭据服务未就绪' }
       const envelope = await remote.describeCredentials(refs)
       const body = envelope.value
@@ -263,7 +262,7 @@ export function apply(ctx: ClientContext): void {
       return { ok: true, credentials: body.credentials ?? {} }
     },
     setCredential: async (ref, value) => {
-      const remote = ctx.get('remote.looklook') as { setCredential?: (payload: { ref: string; value: string }) => Promise<{ ok: boolean; value?: { ok: boolean; error?: string }; error?: { message?: string } }> } | undefined
+      const remote = ctx.get('remote.verylook') as { setCredential?: (payload: { ref: string; value: string }) => Promise<{ ok: boolean; value?: { ok: boolean; error?: string }; error?: { message?: string } }> } | undefined
       if (remote?.setCredential === undefined) return { ok: false, error: '插件凭据服务未就绪' }
       const envelope = await remote.setCredential({ ref, value })
       const body = envelope.value
@@ -307,7 +306,7 @@ export function apply(ctx: ClientContext): void {
   ctx.effect(() => {
     const dispose = ctx.remote.$on('settings/document-updated', refreshPluginState)
     return () => { dispose() }
-  }, 'dsh-looklook: settings invalidation fan-out')
+  }, 'dsh-verylook: settings invalidation fan-out')
 
   /** Strict wire schema for the discovery request (Typert requires strict codecs). */
   const parseProvider = (value: unknown): { baseURL: string; apiKeyEnv: string; apiKey?: string } => {
@@ -421,53 +420,53 @@ export function apply(ctx: ClientContext): void {
     }
   }
 
-  // Model-discovery + upload RPCs: mount the `remote.looklook`
-  // namespace backed by the host LooklookRemoteService. Every method rides
+  // Model-discovery + upload RPCs: mount the `remote.verylook`
+  // namespace backed by the host VerylookRemoteService. Every method rides
   // the authorized connection (no unauth'd HTTP routes).
   ctx.effect(() => {
     const mounting = ctx.remote.$mount({
-      package: 'dsh-looklook',
+      package: 'dsh-verylook',
       descriptors: [
         {
-          id: 'looklook.describeSettings',
-          service: 'looklookRemote',
-          namespace: 'looklook',
+          id: 'verylook.describeSettings',
+          service: 'verylookRemote',
+          namespace: 'verylook',
           method: 'describeSettings',
           invocation: { kind: 'direct' },
           parameters: [],
-          result: { mode: 'strict', typeSymbol: 'LooklookSettingsResult', schema: { parse: parseAsIs } },
+          result: { mode: 'strict', typeSymbol: 'VerylookSettingsResult', schema: { parse: parseAsIs } },
         },
         {
-          id: 'looklook.updateSettings',
-          service: 'looklookRemote',
-          namespace: 'looklook',
+          id: 'verylook.updateSettings',
+          service: 'verylookRemote',
+          namespace: 'verylook',
           method: 'updateSettings',
           invocation: { kind: 'direct' },
-          parameters: [{ name: 'payload', wire: 'payload', source: 'json', codec: { mode: 'strict', typeSymbol: 'LooklookSettingsUpdate', schema: { parse: parseAsIs } } }],
-          result: { mode: 'strict', typeSymbol: 'LooklookSettingsUpdateResult', schema: { parse: parseAsIs } },
+          parameters: [{ name: 'payload', wire: 'payload', source: 'json', codec: { mode: 'strict', typeSymbol: 'VerylookSettingsUpdate', schema: { parse: parseAsIs } } }],
+          result: { mode: 'strict', typeSymbol: 'VerylookSettingsUpdateResult', schema: { parse: parseAsIs } },
         },
         {
-          id: 'looklook.describeCredentials',
-          service: 'looklookRemote',
-          namespace: 'looklook',
+          id: 'verylook.describeCredentials',
+          service: 'verylookRemote',
+          namespace: 'verylook',
           method: 'describeCredentials',
           invocation: { kind: 'direct' },
-          parameters: [{ name: 'refs', wire: 'refs', source: 'json', codec: { mode: 'strict', typeSymbol: 'LooklookCredentialRefs', schema: { parse: parseAsIs } } }],
-          result: { mode: 'strict', typeSymbol: 'LooklookCredentialsResult', schema: { parse: parseAsIs } },
+          parameters: [{ name: 'refs', wire: 'refs', source: 'json', codec: { mode: 'strict', typeSymbol: 'VerylookCredentialRefs', schema: { parse: parseAsIs } } }],
+          result: { mode: 'strict', typeSymbol: 'VerylookCredentialsResult', schema: { parse: parseAsIs } },
         },
         {
-          id: 'looklook.setCredential',
-          service: 'looklookRemote',
-          namespace: 'looklook',
+          id: 'verylook.setCredential',
+          service: 'verylookRemote',
+          namespace: 'verylook',
           method: 'setCredential',
           invocation: { kind: 'direct' },
-          parameters: [{ name: 'payload', wire: 'payload', source: 'json', codec: { mode: 'strict', typeSymbol: 'LooklookCredentialPayload', schema: { parse: parseAsIs } } }],
-          result: { mode: 'strict', typeSymbol: 'LooklookCredentialResult', schema: { parse: parseAsIs } },
+          parameters: [{ name: 'payload', wire: 'payload', source: 'json', codec: { mode: 'strict', typeSymbol: 'VerylookCredentialPayload', schema: { parse: parseAsIs } } }],
+          result: { mode: 'strict', typeSymbol: 'VerylookCredentialResult', schema: { parse: parseAsIs } },
         },
         {
-          id: 'looklook.listModels',
-          service: 'looklookRemote',
-          namespace: 'looklook',
+          id: 'verylook.listModels',
+          service: 'verylookRemote',
+          namespace: 'verylook',
           method: 'listModels',
           invocation: { kind: 'direct' },
           parameters: [{
@@ -476,26 +475,26 @@ export function apply(ctx: ClientContext): void {
             source: 'json',
             codec: { mode: 'strict', typeSymbol: 'VisionProviderProbe', schema: { parse: parseProvider } },
           }],
-          result: { mode: 'strict', typeSymbol: 'LooklookListModelsResult', schema: { parse: parseResult } },
+          result: { mode: 'strict', typeSymbol: 'VerylookListModelsResult', schema: { parse: parseResult } },
         },
         {
-          id: 'looklook.upload',
-          service: 'looklookRemote',
-          namespace: 'looklook',
+          id: 'verylook.upload',
+          service: 'verylookRemote',
+          namespace: 'verylook',
           method: 'upload',
           invocation: { kind: 'direct' },
           parameters: [{
             name: 'payload',
             wire: 'payload',
             source: 'json',
-            codec: { mode: 'strict', typeSymbol: 'LooklookUploadPayload', schema: { parse: parseUploadPayload } },
+            codec: { mode: 'strict', typeSymbol: 'VerylookUploadPayload', schema: { parse: parseUploadPayload } },
           }],
-          result: { mode: 'strict', typeSymbol: 'LooklookUploadResult', schema: { parse: parseUploadResult } },
+          result: { mode: 'strict', typeSymbol: 'VerylookUploadResult', schema: { parse: parseUploadResult } },
         },
         {
-          id: 'looklook.sessionModality',
-          service: 'looklookRemote',
-          namespace: 'looklook',
+          id: 'verylook.sessionModality',
+          service: 'verylookRemote',
+          namespace: 'verylook',
           method: 'sessionModality',
           invocation: { kind: 'direct' },
           parameters: [{
@@ -504,71 +503,71 @@ export function apply(ctx: ClientContext): void {
             source: 'json',
             codec: { mode: 'strict', typeSymbol: 'SessionId', schema: { parse: parseSessionId } },
           }],
-          result: { mode: 'strict', typeSymbol: 'LooklookModalityResult', schema: { parse: parseModalityResult } },
+          result: { mode: 'strict', typeSymbol: 'VerylookModalityResult', schema: { parse: parseModalityResult } },
         },
         {
-          id: 'looklook.readUpload',
-          service: 'looklookRemote',
-          namespace: 'looklook',
+          id: 'verylook.readUpload',
+          service: 'verylookRemote',
+          namespace: 'verylook',
           method: 'readUpload',
           invocation: { kind: 'direct' },
           parameters: [{
             name: 'payload',
             wire: 'payload',
             source: 'json',
-            codec: { mode: 'strict', typeSymbol: 'LooklookReadUploadPayload', schema: { parse: parseReadUploadPayload } },
+            codec: { mode: 'strict', typeSymbol: 'VerylookReadUploadPayload', schema: { parse: parseReadUploadPayload } },
           }],
-          result: { mode: 'strict', typeSymbol: 'LooklookReadUploadResult', schema: { parse: parseReadUploadResult } },
+          result: { mode: 'strict', typeSymbol: 'VerylookReadUploadResult', schema: { parse: parseReadUploadResult } },
         },
         {
-          id: 'looklook.envCheck',
-          service: 'looklookRemote',
-          namespace: 'looklook',
+          id: 'verylook.envCheck',
+          service: 'verylookRemote',
+          namespace: 'verylook',
           method: 'envCheck',
           invocation: { kind: 'direct' },
           parameters: [],
-          result: { mode: 'strict', typeSymbol: 'LooklookEnvCheckReport', schema: { parse: parseAsIs } },
+          result: { mode: 'strict', typeSymbol: 'VerylookEnvCheckReport', schema: { parse: parseAsIs } },
         },
         {
-          id: 'looklook.capabilityCheck',
-          service: 'looklookRemote',
-          namespace: 'looklook',
+          id: 'verylook.capabilityCheck',
+          service: 'verylookRemote',
+          namespace: 'verylook',
           method: 'capabilityCheck',
           invocation: { kind: 'direct' },
           parameters: [],
-          result: { mode: 'strict', typeSymbol: 'LooklookCapabilityReport', schema: { parse: parseAsIs } },
+          result: { mode: 'strict', typeSymbol: 'VerylookCapabilityReport', schema: { parse: parseAsIs } },
         },
         {
-          id: 'looklook.getPluginVersion',
-          service: 'looklookRemote',
-          namespace: 'looklook',
+          id: 'verylook.getPluginVersion',
+          service: 'verylookRemote',
+          namespace: 'verylook',
           method: 'getPluginVersion',
           invocation: { kind: 'direct' },
           parameters: [],
-          result: { mode: 'strict', typeSymbol: 'LooklookVersionResult', schema: { parse: parseAsIs } },
+          result: { mode: 'strict', typeSymbol: 'VerylookVersionResult', schema: { parse: parseAsIs } },
         },
         {
-          id: 'looklook.checkUpdate',
-          service: 'looklookRemote',
-          namespace: 'looklook',
+          id: 'verylook.checkUpdate',
+          service: 'verylookRemote',
+          namespace: 'verylook',
           method: 'checkUpdate',
           invocation: { kind: 'direct' },
           parameters: [],
-          result: { mode: 'strict', typeSymbol: 'LooklookUpdateResult', schema: { parse: parseAsIs } },
+          result: { mode: 'strict', typeSymbol: 'VerylookUpdateResult', schema: { parse: parseAsIs } },
         },
         {
-          id: 'looklook.uninstallPlugin',
-          service: 'looklookRemote',
-          namespace: 'looklook',
+          id: 'verylook.uninstallPlugin',
+          service: 'verylookRemote',
+          namespace: 'verylook',
           method: 'uninstallPlugin',
           invocation: { kind: 'direct' },
           parameters: [],
-          result: { mode: 'strict', typeSymbol: 'LooklookUninstallResult', schema: { parse: parseAsIs } },
+          result: { mode: 'strict', typeSymbol: 'VerylookUninstallResult', schema: { parse: parseAsIs } },
         },
         {
-          id: 'looklook.envRepair',
-          service: 'looklookRemote',
-          namespace: 'looklook',
+          id: 'verylook.envRepair',
+          service: 'verylookRemote',
+          namespace: 'verylook',
           method: 'envRepair',
           invocation: { kind: 'direct' },
           parameters: [{
@@ -577,12 +576,12 @@ export function apply(ctx: ClientContext): void {
             source: 'json',
             codec: { mode: 'strict', typeSymbol: 'EnvRepairAction', schema: { parse: parseEnvRepairAction } },
           }],
-          result: { mode: 'strict', typeSymbol: 'LooklookEnvCheckItem', schema: { parse: parseAsIs } },
+          result: { mode: 'strict', typeSymbol: 'VerylookEnvCheckItem', schema: { parse: parseAsIs } },
         },
         {
-          id: 'looklook.testVision',
-          service: 'looklookRemote',
-          namespace: 'looklook',
+          id: 'verylook.testVision',
+          service: 'verylookRemote',
+          namespace: 'verylook',
           method: 'testVision',
           invocation: { kind: 'direct' },
           parameters: [{
@@ -591,12 +590,12 @@ export function apply(ctx: ClientContext): void {
             source: 'json',
             codec: { mode: 'strict', typeSymbol: 'TestProviderProbe', schema: { parse: parseTestProvider } },
           }],
-          result: { mode: 'strict', typeSymbol: 'LooklookTestVisionResult', schema: { parse: parseAsIs } },
+          result: { mode: 'strict', typeSymbol: 'VerylookTestVisionResult', schema: { parse: parseAsIs } },
         },
         {
-          id: 'looklook.testAudio',
-          service: 'looklookRemote',
-          namespace: 'looklook',
+          id: 'verylook.testAudio',
+          service: 'verylookRemote',
+          namespace: 'verylook',
           method: 'testAudio',
           invocation: { kind: 'direct' },
           parameters: [{
@@ -605,12 +604,12 @@ export function apply(ctx: ClientContext): void {
             source: 'json',
             codec: { mode: 'strict', typeSymbol: 'TestProviderProbe', schema: { parse: parseTestProvider } },
           }],
-          result: { mode: 'strict', typeSymbol: 'LooklookTestAudioResult', schema: { parse: parseAsIs } },
+          result: { mode: 'strict', typeSymbol: 'VerylookTestAudioResult', schema: { parse: parseAsIs } },
         },
       ],
     })
     return () => { void mounting.then(dispose => dispose()) }
-  }, 'dsh-looklook: remote RPCs')
+  }, 'dsh-verylook: remote RPCs')
 
   /** Call the host discovery RPC once the namespace is mounted. */
   const listModels = async (provider: {
@@ -618,7 +617,7 @@ export function apply(ctx: ClientContext): void {
     apiKeyEnv: string
     apiKey?: string
   }): Promise<{ ok: true; models: string[] } | { ok: false; error: string }> => {
-    const remote = ctx.get('remote.looklook') as {
+    const remote = ctx.get('remote.verylook') as {
       listModels?: (p: {
         baseURL: string
         apiKeyEnv: string
@@ -651,7 +650,7 @@ export function apply(ctx: ClientContext): void {
     file: File,
     onProgress?: (percent: number) => void,
   ): Promise<{ path: string; name: string }> => {
-    const remote = ctx.get('remote.looklook') as {
+    const remote = ctx.get('remote.verylook') as {
       upload?: (payload: { sessionId: string; name: string; data: string }) => Promise<
         { ok: boolean; value?: { ok: boolean; path?: string; error?: string }; error?: { message?: string } }
       >
@@ -690,7 +689,7 @@ export function apply(ctx: ClientContext): void {
             error: undefined,
           })
         } catch (error) {
-          console.error('looklook upload failed:', file.name, error)
+          console.error('verylook upload failed:', file.name, error)
           controller.updateById(sessionId, id, {
             uploading: false,
             error: error instanceof Error ? error.message : String(error),
@@ -702,7 +701,7 @@ export function apply(ctx: ClientContext): void {
 
   /** Ask the host whether the session's current model accepts image input. */
   const sessionModality = async (sessionId: string): Promise<SessionModality> => {
-    const remote = ctx.get('remote.looklook') as {
+    const remote = ctx.get('remote.verylook') as {
       sessionModality?: (sessionId: string) => Promise<
         { ok: boolean; value?: SessionModality; error?: { message?: string } }
       >
@@ -724,7 +723,7 @@ export function apply(ctx: ClientContext): void {
 
   /** Run the environment self-check (settings dialog). */
   const envCheck = async (): Promise<EnvCheckReport> => {
-    const remote = ctx.get('remote.looklook') as {
+    const remote = ctx.get('remote.verylook') as {
       envCheck?: () => Promise<
         { ok: boolean; value?: EnvCheckReport; error?: { message?: string } }
       >
@@ -745,7 +744,7 @@ export function apply(ctx: ClientContext): void {
 
   /** 功能能力自检（图像/视频/声音/PSD/Office/视频平台）。 */
   const capabilityCheck = async (): Promise<CapabilityReport> => {
-    const remote = ctx.get('remote.looklook') as {
+    const remote = ctx.get('remote.verylook') as {
       capabilityCheck?: () => Promise<
         { ok: boolean; value?: CapabilityReport; error?: { message?: string } }
       >
@@ -766,7 +765,7 @@ export function apply(ctx: ClientContext): void {
 
   /** 获取插件版本号。 */
   const getPluginVersion = async (): Promise<string> => {
-    const remote = ctx.get('remote.looklook') as {
+    const remote = ctx.get('remote.verylook') as {
       getPluginVersion?: () => Promise<
         { ok: boolean; value?: { version: string } | { error?: string }; error?: { message?: string } }
       >
@@ -785,7 +784,7 @@ export function apply(ctx: ClientContext): void {
 
   /** 检查 GitHub 是否有更新。 */
   const checkUpdate = async (): Promise<{ hasUpdate: boolean; remoteVersion: string }> => {
-    const remote = ctx.get('remote.looklook') as {
+    const remote = ctx.get('remote.verylook') as {
       checkUpdate?: () => Promise<
         { ok: boolean; value?: { hasUpdate: boolean; remoteVersion: string } | { error?: string }; error?: { message?: string } }
       >
@@ -802,9 +801,9 @@ export function apply(ctx: ClientContext): void {
     }
   }
 
-  /** 卸载 looklook 插件。 */
+  /** 卸载 verylook 插件。 */
   const uninstallPlugin = async (): Promise<{ ok: boolean; error?: string }> => {
-    const remote = ctx.get('remote.looklook') as {
+    const remote = ctx.get('remote.verylook') as {
       uninstallPlugin?: () => Promise<
         { ok: boolean; value?: { restart: boolean } | { error?: string }; error?: { message?: string } }
       >
@@ -825,7 +824,7 @@ export function apply(ctx: ClientContext): void {
 
   /** One-click repair for one env item; returns the item's fresh state. */
   const envRepair = async (action: 'install-yt-dlp'): Promise<EnvCheckItem> => {
-    const remote = ctx.get('remote.looklook') as {
+    const remote = ctx.get('remote.verylook') as {
       envRepair?: (action: string) => Promise<
         { ok: boolean; value?: EnvCheckItem; error?: { message?: string } }
       >
@@ -851,7 +850,7 @@ export function apply(ctx: ClientContext): void {
     apiKey?: string
     model: string
   }): Promise<{ ok: true; supportsImage: boolean; message: string } | { ok: false; error: string }> => {
-    const remote = ctx.get('remote.looklook') as {
+    const remote = ctx.get('remote.verylook') as {
       testVision?: (p: {
         baseURL: string
         apiKeyEnv: string
@@ -883,7 +882,7 @@ export function apply(ctx: ClientContext): void {
     apiKey?: string
     model: string
   }): Promise<{ ok: true; level: 'L1' | 'L2' | 'none'; message: string } | { ok: false; error: string }> => {
-    const remote = ctx.get('remote.looklook') as {
+    const remote = ctx.get('remote.verylook') as {
       testAudio?: (p: {
         baseURL: string
         apiKeyEnv: string
@@ -915,7 +914,7 @@ export function apply(ctx: ClientContext): void {
   const cachedSupportsImage = (sessionId: string): boolean | undefined => modalityCache.get(sessionId)
 
   // Probe one session's modality and remember the result. A failed probe
-  // (e.g. remote.looklook still mounting at apply time) schedules ONE retry
+  // (e.g. remote.verylook still mounting at apply time) schedules ONE retry
   // shortly after, so cold-start probes are not permanently lost. Uses the
   // browser global timer (the client runs in the page; dsh-client-runtime
   // itself relies on the same global).
@@ -934,31 +933,31 @@ export function apply(ctx: ClientContext): void {
   // Refresh the modality cache when the session changes.
   ctx.effect(() => {
     const sync = (): void => {
-      const sessionId = sessions.currentProvideInfo.getSnapshot()?.sessionId
+      const sessionId = sessions.list.getSnapshot().current
       if (sessionId === undefined || sessionId === '') return
       probeModality(sessionId)
     }
-    const dispose = sessions.currentProvideInfo.subscribe(sync)
+    const dispose = sessions.list.subscribe(sync)
     sync()
     return () => { dispose() }
-  }, 'dsh-looklook: modality cache')
+  }, 'dsh-verylook: modality cache')
 
   // Invalidate the modality cache on every settings update (model switch,
   // provider change, eye toggle) so the next drop re-probes.
   ctx.effect(() => {
     const dispose = ctx.remote.$on('settings/document-updated', () => {
       modalityCache.clear()
-      const sessionId = sessions.currentProvideInfo.getSnapshot()?.sessionId
+      const sessionId = sessions.list.getSnapshot().current
       if (sessionId !== undefined && sessionId !== '') probeModality(sessionId)
     })
     return () => { dispose() }
-  }, 'dsh-looklook: modality invalidation')
+  }, 'dsh-verylook: modality invalidation')
 
   ctx.slots.inject('settings.plugin.item', () => ctx.slots.register({
     name: 'settings.plugin.item',
     key: PLUGIN_CARD_ID,
     priority: 30,
-    inject: (): LooklookCardInjected => ({
+    inject: (): VerylookCardInjected => ({
       api: connection.api,
       pluginSettings,
       t,
@@ -975,7 +974,7 @@ export function apply(ctx: ClientContext): void {
       uninstallPlugin,
       usePluginEnabled,
     }),
-  }, LooklookPluginCard))
+  }, VerylookPluginCard))
 
   // Drag-and-drop of files onto the page: intercept in the CAPTURE phase.
   // Rule per drop:
@@ -1000,7 +999,7 @@ export function apply(ctx: ClientContext): void {
       if (master.status === 'ready' && master.enabled === false) return
       const files = [...(event.dataTransfer?.files ?? [])]
       if (files.length === 0) return
-      const sessionId = sessions.currentProvideInfo.getSnapshot()?.sessionId
+      const sessionId = sessions.list.getSnapshot().current
       if (sessionId === undefined || sessionId === '') return
 
       const hasNonImage = files.some(file => isUploadableName(file.name))
@@ -1035,7 +1034,7 @@ export function apply(ctx: ClientContext): void {
       // Master switch OFF → plugin dormant, DSH behaves as without it.
       const master = features.store.getSnapshot()
       if (master.status === 'ready' && master.enabled === false) return
-      const sessionId = sessions.currentProvideInfo.getSnapshot()?.sessionId
+      const sessionId = sessions.list.getSnapshot().current
       if (sessionId === undefined || sessionId === '') return
       const imageFiles = [...event.clipboardData.items]
         .filter(item => item.kind === 'file' && item.type.startsWith('image/'))
@@ -1057,7 +1056,7 @@ export function apply(ctx: ClientContext): void {
     // "+ 按钮" file picker: the picker commits through an <input type=file>
     // change event. Intercept in CAPTURE so image picks never reach the
     // native intake for image-only picks when the session is natively
-    // multimodal. Non-image picks must always use Look Look's file channel.
+    // multimodal. Non-image picks must always use VeryLook's file channel.
     const onChangeCapture = (event: Event): void => {
       const input = event.target
       if (!(input instanceof HTMLInputElement)) return
@@ -1067,7 +1066,7 @@ export function apply(ctx: ClientContext): void {
       if (master.status === 'ready' && master.enabled === false) return
       const files = [...(input.files ?? [])]
       if (files.length === 0) return
-      const sessionId = sessions.currentProvideInfo.getSnapshot()?.sessionId
+      const sessionId = sessions.list.getSnapshot().current
       if (sessionId === undefined || sessionId === '') return
       const hasNonImage = files.some(file => isUploadableName(file.name))
       if (!hasNonImage) {
@@ -1090,7 +1089,7 @@ export function apply(ctx: ClientContext): void {
       document.removeEventListener('paste', onPasteCapture, true)
       document.removeEventListener('change', onChangeCapture, true)
     }
-  }, 'dsh-looklook: file drag-and-drop')
+  }, 'dsh-verylook: file drag-and-drop')
 
   // Pending file chips (like image attachments, removable, sent with the
   // next Enter/send — the submit patch merges their notes), rendered INSIDE
@@ -1122,9 +1121,9 @@ export function apply(ctx: ClientContext): void {
   // Render the ORIGINAL image in user messages (native position, plugin
   // renderer so the original image + file-channel thumbnails show inline).
   const chatNodeInject = (): { sessionId: string; loadUpload: import('./UserMessageNodeView.tsx').UploadImageLoader; fileRegistry: Map<string, Map<string, { name: string; displayName: string; path: string; size: number }>> } => {
-    const sessionId = sessions.currentProvideInfo.getSnapshot()?.sessionId ?? ''
+    const sessionId = sessions.list.getSnapshot().current ?? ''
     const loadUpload: import('./UserMessageNodeView.tsx').UploadImageLoader = async (sid, name) => {
-      const remote = ctx.get('remote.looklook') as {
+      const remote = ctx.get('remote.verylook') as {
         readUpload?: (payload: { sessionId: string; name: string }) => Promise<
           { ok: boolean; value?: { ok: boolean; mediaType: string; data: string; error?: string }; error?: { message?: string } }
         >
@@ -1154,29 +1153,28 @@ export function apply(ctx: ClientContext): void {
     priority: -1,
     locale: NS,
     inject: chatNodeInject,
-  }, LooklookUserMessageNodeView))
+  }, VerylookUserMessageNodeView))
   ctx.slots.inject('conversation.chat.node', () => ctx.slots.register({
     name: 'conversation.chat.node',
     key: 'steering',
     priority: -1,
     locale: NS,
     inject: chatNodeInject,
-  }, LooklookUserMessageNodeView))
+  }, VerylookUserMessageNodeView))
 
   // Copy-session-id button, rendered in the assistant-actions row (next to
   // copy-text / branch).  Copies `dsh-session://<id>\n标题: <title>`.
   const copySessionIdInject = (): CopySessionIdInjected => {
-    const info = sessions.currentProvideInfo.getSnapshot()
-    const sessionId = info?.sessionId ?? ''
+    const listSnap = sessions.list.getSnapshot()
+    const sessionId = listSnap.current ?? ''
     let title = ''
-    const list = (sessions as unknown as { list?: { getSnapshot(): { byId: Record<string, { displayTitle?: string }> } } })?.list?.getSnapshot?.()
-    const row = list?.byId[sessionId]
+    const row = listSnap.byId?.[sessionId]
     if (row && typeof row.displayTitle === 'string') title = row.displayTitle
     return { sessionId, title }
   }
   ctx.slots.inject('conversation.chat.assistant-actions', () => ctx.slots.register({
     name: 'conversation.chat.assistant-actions',
-    id: 'looklook-copy-session-id',
+    id: 'verylook-copy-session-id',
     order: 10,
     inject: copySessionIdInject,
   }, CopySessionIdButton))
@@ -1185,10 +1183,10 @@ export function apply(ctx: ClientContext): void {
   // always visible even when message-level actions are hidden (e.g. mid-conversation crash).
   ctx.slots.inject('conversation.session.header.actions', () => ctx.slots.register({
     name: 'conversation.session.header.actions',
-    id: 'looklook-session-header-copy',
+    id: 'verylook-session-header-copy',
     order: -100,
   }, SessionHeaderCopyButton))
 
   // ── Chat minimap — left-side vertical dash bar ────────────────
-  ctx.effect(() => { installChatMinimap(); return () => {} }, 'dsh-looklook: chat minimap')
+  ctx.effect(() => { installChatMinimap(); return () => {} }, 'dsh-verylook: chat minimap')
 }

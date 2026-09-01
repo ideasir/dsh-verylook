@@ -20,7 +20,7 @@ const check = (name, ok, detail = '') => {
 }
 
 // ── temp workspace ──
-const ws = await mkdtemp(join(tmpdir(), 'looklook-sim-'))
+const ws = await mkdtemp(join(tmpdir(), 'verylook-sim-'))
 const sessionId = 'session-sim-0001'
 const fakeCtx = {
   get(name) {

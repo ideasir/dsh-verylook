@@ -9,12 +9,12 @@ const image = { type: "image", attachment: { attachmentId: "sha256:abc", mediaTy
 const ref = buildImageToolReference(image);
 console.log("reference text:");
 console.log(ref);
-if (!ref.includes("【looklook:开始】") || !ref.includes("【looklook:结束】")) throw new Error("hide markers missing");
+if (!ref.includes("【verylook:开始】") || !ref.includes("【verylook:结束】")) throw new Error("hide markers missing");
 if (!ref.includes("sha256:abc")) throw new Error("attachment id missing");
 if (!ref.includes("【附图:{\"attachmentId\":\"sha256:abc\"")) throw new Error("image marker missing");
 
 // 2) client-side round trip: strip hidden range, extract marker
-const HIDE_START = "【looklook:开始】", HIDE_END = "【looklook:结束】";
+const HIDE_START = "【verylook:开始】", HIDE_END = "【verylook:结束】";
 let out = ref;
 for (;;) {
   const s = out.indexOf(HIDE_START);
@@ -25,7 +25,7 @@ for (;;) {
 const ids = [...out.matchAll(/【附图:([^】]+)】/g)].map(m => JSON.parse(m[1]));
 console.log("after client strip:", JSON.stringify(out));
 if (ids.length !== 1 || ids[0].attachmentId !== "sha256:abc") throw new Error("client round trip failed");
-if (out.includes("looklook_see")) throw new Error("hidden text not stripped");
+if (out.includes("verylook_see")) throw new Error("hidden text not stripped");
 
 // 3) rewriteImagesToToolReferences populates registry + replaces images
 const registry = new Map();
@@ -65,7 +65,7 @@ console.log("tools registered:", tools.map(t => t.name));
 console.log("system prompts:", prompts.map(p => p.name));
 console.log("configurable providers:", providers.map(p => `${p.provider}->${p.settingsNs}`));
 const names = tools.map(t => t.name);
-if (names.length !== 2 || !names.includes("looklook_see") || !names.includes("process_zip")) {
+if (names.length !== 2 || !names.includes("verylook_see") || !names.includes("process_zip")) {
   throw new Error("tools not registered: " + names.join(", "));
 }
 if (prompts.length < 1) throw new Error("system prompts missing");

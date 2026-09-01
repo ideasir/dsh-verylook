@@ -1,5 +1,5 @@
 /**
- * dsh-looklook/capability-check — 功能能力自检。
+ * dsh-verylook/capability-check — 功能能力自检。
  *
  * 检测每种识别能力是否完整可用，返回每项的状态和失败原因。
  * 与 env-check.ts（运行环境检测）互补：

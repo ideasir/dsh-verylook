@@ -4,7 +4,7 @@
  * Find one namespace entry in a settings `describe()` result and return its
  * value, or undefined when absent.
  * @param namespaces - the wire `namespaces` array from `api.settings.describe`.
- * @param ns - the namespace name to look up (e.g. 'vision', 'looklook').
+ * @param ns - the namespace name to look up (e.g. 'vision', 'verylook').
  */
 export function namespaceValueOf(namespaces: unknown, ns: string): unknown {
   if (!Array.isArray(namespaces)) return undefined

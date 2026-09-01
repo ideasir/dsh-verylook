@@ -1,4 +1,4 @@
-/** dsh-looklook client copy. Product copy is Chinese; English mirrors it. */
+/** dsh-verylook client copy. Product copy is Chinese; English mirrors it. */
 
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export const zh = {
@@ -36,16 +36,16 @@ export const zh = {
   'settings.saved': '已保存',
   'settings.saveFailed': '保存失败',
   'settings.failoverHint': '顺序即降级顺序：第一个启用的提供商为主模型，主模型失败时依次使用后续提供商。',
-  'eye.on': 'Look Look 已开启，现在你可以对任何文件进行 Look Look 了',
-  'eye.off': 'Look Look 已关闭：当前会话保留原始处理方式',
+  'eye.on': 'VeryLook 已开启，现在你可以对任何文件进行 VeryLook 了',
+  'eye.off': 'VeryLook 已关闭：当前会话保留原始处理方式',
   'eye.unconfigured': '视觉增强已开启，但未配置视觉模型 → 点击前往设置',
-  'card.title': 'Look Look',
+  'card.title': 'VeryLook',
   'card.desc': '可以帮你看图片、视频、zip、psd、ppt',
   'card.expand': '展开',
   'card.collapse': '收起',
   'features.switches.heading': '功能开关',
   'features.master.label': '开关插件',
-  'features.master.desc': '这是插件级总开关：关闭后 DSH 暂时恢复原样，插件不会被卸载；需要时重新打开即可。对话框里的小眼睛还可以按会话快速切换，方便体验和比较 Look Look 的识别效果。',
+  'features.master.desc': '这是插件级总开关：关闭后 DSH 暂时恢复原样，插件不会被卸载；需要时重新打开即可。对话框里的小眼睛还可以按会话快速切换，方便体验和比较 VeryLook 的识别效果。',
   'features.capability.heading': '功能检测',
   'features.capability.checkAll': '全部检测',
   'features.capability.platformsHeading': '支持视频平台检测',
@@ -65,8 +65,8 @@ export const zh = {
   'env.refresh': '重新检测',
 } satisfies Record<string, string>
 
-/** The looklook namespace key union. */
-export type LookLookKey = keyof typeof zh
+/** The verylook namespace key union. */
+export type VeryLookKey = keyof typeof zh
 
 /** English dictionary, checked complete against the zh key set. */
 export const en = {
@@ -107,13 +107,13 @@ export const en = {
   'eye.on': 'Vision assist is on: images are described by the vision model before they reach the conversation model',
   'eye.off': 'Vision assist is off: images are sent to the conversation model as-is',
   'eye.unconfigured': 'Vision assist is on but no vision model is configured — click to open settings',
-  'card.title': 'Look Look',
+  'card.title': 'VeryLook',
   'card.desc': 'Can help you view images, videos, ZIP, PSD, and PPT files',
   'card.expand': 'Expand',
   'card.collapse': 'Collapse',
   'features.switches.heading': 'Feature switches',
   'features.master.label': 'Toggle plugin',
-  'features.master.desc': 'Plugin master switch: OFF temporarily restores the normal DSH behavior without uninstalling the plugin. The conversation eye can still switch Look Look per session for quick comparison.',
+  'features.master.desc': 'Plugin master switch: OFF temporarily restores the normal DSH behavior without uninstalling the plugin. The conversation eye can still switch VeryLook per session for quick comparison.',
   'features.capability.heading': 'Capability check',
   'features.capability.checkAll': 'Check all',
   'features.capability.platformsHeading': 'Video platform check',
@@ -131,4 +131,4 @@ export const en = {
   'env.checking': 'Checking…',
   'env.close': 'Close',
   'env.refresh': 'Re-check',
-} satisfies Record<LookLookKey, string>
+} satisfies Record<VeryLookKey, string>

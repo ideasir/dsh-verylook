@@ -9,8 +9,8 @@
  * deletion and would write the path into the wrong chip).
  */
 
-import type { SnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
-import { createSnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
+import type { SnapshotStore } from './snapshot-store.ts'
+import { createSnapshotStore } from './snapshot-store.ts'
 
 /** One staged file awaiting send. While `uploading` is true, `path` is unset. */
 export interface PendingFile {

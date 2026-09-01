@@ -31,7 +31,7 @@ function setup(scrollEl: HTMLElement): void {
     'z-index:10', 'pointer-events:none', 'background:transparent', 'transition:opacity .3s',
   ].join(';')
   scrollEl.appendChild(ruler)
-  ruler.classList.add('looklook-minimap')
+  ruler.classList.add('verylook-minimap')
 
   // ── 提示浮层 ──────────────────────────────────────────────
   const tip = document.createElement('div')

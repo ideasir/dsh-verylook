@@ -35,8 +35,8 @@ Look 插件渠道编辑原本是"当前页面内嵌展开"（点渠道卡片在�
 
 #### typert.host.js 补全
 - 新增 4 个 RPC 方法的 members 描述：capabilityCheck、getPluginVersion、checkUpdate、uninstallPlugin
-- 新增对应的 invocations 路由条目（`dsh-looklook#looklook/capabilityCheck` 等）
-- 同步部署到源码库 `/vol1/1000/DeepSeek/dsh-looklook/lib/typert.host.js` 和 profile `/root/.dsh/profiles/web/node_modules/dsh-looklook/lib/typert.host.js`
+- 新增对应的 invocations 路由条目（`dsh-verylook#verylook/capabilityCheck` 等）
+- 同步部署到源码库 `/vol1/1000/DeepSeek/dsh-verylook/lib/typert.host.js` 和 profile `/root/.dsh/profiles/web/node_modules/dsh-verylook/lib/typert.host.js`
 
 #### 会话 Header 复制按钮
 - 新建 `src/client/SessionHeaderCopyButton.tsx`
@@ -61,11 +61,11 @@ Look 插件渠道编辑原本是"当前页面内嵌展开"（点渠道卡片在�
 ### 部署
 ```bash
 # 重新构建
-cd /vol1/1000/DeepSeek/dsh-looklook && npm run build
+cd /vol1/1000/DeepSeek/dsh-verylook && npm run build
 
 # 部署客户端 bundle
-cp lib/client.js /root/.dsh/profiles/web/node_modules/dsh-looklook/lib/client.js
-cp lib/client.js.map /root/.dsh/profiles/web/node_modules/dsh-looklook/lib/client.js.map
+cp lib/client.js /root/.dsh/profiles/web/node_modules/dsh-verylook/lib/client.js
+cp lib/client.js.map /root/.dsh/profiles/web/node_modules/dsh-verylook/lib/client.js.map
 
 # 重启 DSH
 kill $(ss -tlnp | grep 3080 | grep -oP 'pid=\K[0-9]+')
@@ -90,14 +90,14 @@ DSH 从 0.1.0-rc.8 升级到 0.1.1-rc.2，需要重新构建适配。
 ### 部署
 ```bash
 # 构建
-cd /vol1/1000/DeepSeek/dsh-looklook && npm run build
+cd /vol1/1000/DeepSeek/dsh-verylook && npm run build
 cd /vol1/1000/DeepSeek/dsh-makemake && npm run build
 
 # 部署（完整复制含 node_modules）
-cd /vol1/1000/DeepSeek/dsh-looklook && npm install --legacy-peer-deps
+cd /vol1/1000/DeepSeek/dsh-verylook && npm install --legacy-peer-deps
 cd /vol1/1000/DeepSeek/dsh-makemake && npm install --legacy-peer-deps
-rm -rf /root/.dsh/profiles/web/node_modules/dsh-looklook /root/.dsh/profiles/web/node_modules/dsh-makemake
-cp -r /vol1/1000/DeepSeek/dsh-looklook /root/.dsh/profiles/web/node_modules/dsh-looklook
+rm -rf /root/.dsh/profiles/web/node_modules/dsh-verylook /root/.dsh/profiles/web/node_modules/dsh-makemake
+cp -r /vol1/1000/DeepSeek/dsh-verylook /root/.dsh/profiles/web/node_modules/dsh-verylook
 cp -r /vol1/1000/DeepSeek/dsh-makemake /root/.dsh/profiles/web/node_modules/dsh-makemake
 
 # 重启

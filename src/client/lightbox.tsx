@@ -5,7 +5,7 @@
  * `ImageLightbox` / `ImageLoader` / `ImageLightboxLabels`（组件被收进内部
  * client 槽位实现，不再对外提供包级导出）。这里按 rc.8 源码的交互行为
  * 原样内置一个轻量实现（Escape / 遮罩 / 关闭按钮，body portal 渲染），
- * 不依赖 DSH 的任何内部 CSS，样式用 looklook 已有的深色主题变量。
+ * 不依赖 DSH 的任何内部 CSS，样式用 verylook 已有的深色主题变量。
  */
 
 import { useEffect, useRef, type ReactNode } from 'react'

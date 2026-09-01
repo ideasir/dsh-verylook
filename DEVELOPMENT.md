@@ -1,4 +1,4 @@
-# dsh-looklook 开发文档
+# dsh-verylook 开发文档
 
 > **UI 规范：** 图标（Lucide 24×24 stroke-2）、主题（CSS 变量）、卡片结构（dsh-mm-*）统一遵循
 > `/vol1/1000/DeepSeek/DSH-UI-SPEC.md` —— 所有 ideasir 插件必须遵守，禁止硬编码颜色/非标准图标。
@@ -10,7 +10,7 @@ src/
 ├── index.ts                 # Host 半部：工具注册、RPC、上传、解析路由
 ├── client/                  # Client 半部：插件 UI
 │   ├── index.ts             # 入口：注册 settings.plugin.item 卡片、眼睛开关
-│   ├── PluginTab.tsx        # Look Look 配置卡片
+│   ├── PluginTab.tsx        # VeryLook 配置卡片
 │   ├── VisionSettings.tsx   # 视觉模型设置
 │   ├── Features.tsx         # 功能开关（识别图像/视频）
 │   ├── EnvCheck.tsx         # 环境自检
@@ -19,7 +19,7 @@ src/
 │   ├── eye-controller.ts    # 眼睛开关控制器
 │   └── ...                  # 其他 UI 组件
 ├── parser/                  # 文档解析器（PDF/Word/Excel/PPT/PSD/ZIP）
-├── see-tool.ts              # looklook_see 工具
+├── see-tool.ts              # verylook_see 工具
 ├── describe-tool.ts         # 图片描述工具
 ├── doc-tool.ts              # 文档解析工具
 ├── video-tool.ts            # 视频理解工具
@@ -27,7 +27,7 @@ src/
 └── ...
 lib/                         # 构建产物（lib/index.js + lib/client.js）
 scripts/copy-worker.mjs      # 复制 PDF worker
-skills/looklook/SKILL.md     # 技能定义
+skills/verylook/SKILL.md     # 技能定义
 ```
 
 运行时使用 `lib/` 构建产物。`src/` 是唯一源码，修改后必须重新构建。
@@ -65,9 +65,9 @@ npm run typecheck
 
 `src/index.ts` 负责：
 
-1. 注册 `looklook_see` 工具（统一入口：图片/视频/音频/文档/压缩包/聊天记录）；
-2. 注册视觉/音频模型配置 namespace（`vision` / `looklook-audio`）；
-3. 通过 `remote.looklook.upload` RPC 处理拖拽文件上传；
+1. 注册 `verylook_see` 工具（统一入口：图片/视频/音频/文档/压缩包/聊天记录）；
+2. 注册视觉/音频模型配置 namespace（`vision` / `verylook-audio`）；
+3. 通过 `remote.verylook.upload` RPC 处理拖拽文件上传；
 4. 本地解析 Office/PDF/PSD/ZIP 等文件；
 5. 提供 `getPluginVersion` / `checkUpdate` / `uninstallPlugin` 等 RPC。
 
@@ -82,7 +82,7 @@ npm run typecheck
 
 客户端注册到以下 DSH slot：
 
-- `settings.plugin.item` — 设置页插件卡片（`LooklookPluginCard`）；
+- `settings.plugin.item` — 设置页插件卡片（`VerylookPluginCard`）；
 - `conversation.session.header.actions` — 会话 Header 复制按钮；
 - 其他 UI 组件（眼睛开关、ChatMinimap 等）。
 
@@ -94,7 +94,7 @@ npm run typecheck
 
 ```bash
 # 构建后部署到 DSH profile
-cp -r lib/* /root/.dsh/profiles/web/node_modules/dsh-looklook/lib/
+cp -r lib/* /root/.dsh/profiles/web/node_modules/dsh-verylook/lib/
 # 重启 DSH
 ```
 

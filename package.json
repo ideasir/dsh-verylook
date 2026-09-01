@@ -1,7 +1,7 @@
 {
-  "name": "dsh-looklook",
-  "version": "0829-0.1.2-rc.2",
-  "description": "Look at anything for DeepSeek Harness (dsh-looklook): unified looklook_see tool for images, videos (frames + audio understanding) and archives; OpenAI-compatible vision/audio model config with capability probing, plus a one-click local ASR install.",
+  "name": "dsh-verylook",
+  "version": "0901-0.1.2-alpha.3",
+  "description": "Look at anything for DeepSeek Harness (dsh-verylook): unified verylook_see tool for images, videos (frames + audio understanding) and archives; OpenAI-compatible vision/audio model config with capability probing, plus a one-click local ASR install.",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

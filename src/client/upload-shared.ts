@@ -1,6 +1,6 @@
 /**
- * Shared upload logic for dsh-looklook: upload any dropped file (image,
- * archive, video) through the plugin's `remote.looklook.upload` RPC (saved
+ * Shared upload logic for dsh-verylook: upload any dropped file (image,
+ * archive, video) through the plugin's `remote.verylook.upload` RPC (saved
  * into the session workspace `.uploads/`) and return its path. The caller
  * stages the note into the input draft — nothing is sent until the user
  * presses Enter.
@@ -20,7 +20,7 @@ export function isNativeImageName(name: string): boolean {
   return NATIVE_IMAGE_EXTENSIONS.includes(ext)
 }
 
-/** Whether a file name should be intercepted by the looklook upload channel
+/** Whether a file name should be intercepted by the verylook upload channel
  * (i.e. it is NOT a native image; images are routed by modality at drop time). */
 export function isUploadableName(name: string): boolean {
   return !isNativeImageName(name)
@@ -54,7 +54,7 @@ export function fileToBase64(file: File): Promise<string> {
 }
 
 /** The remote surface the upload RPC lives on. */
-export interface LooklookUploadRemote {
+export interface VerylookUploadRemote {
   upload?(payload: { sessionId: string; name: string; data: string }): Promise<
     { ok: boolean; value?: { ok: boolean; path?: string; name?: string; error?: string }; error?: { message?: string } }
   >
@@ -62,7 +62,7 @@ export interface LooklookUploadRemote {
 
 /** Upload one file via the authorized RPC. */
 export async function uploadFile(
-  remote: LooklookUploadRemote | undefined,
+  remote: VerylookUploadRemote | undefined,
   sessionId: string,
   file: File,
   onProgress?: (percent: number) => void,

@@ -1,5 +1,5 @@
 /**
- * dsh-looklook/doc — document branch of looklook_see: Word/Excel/PPT/PDF/PSD.
+ * dsh-verylook/doc — document branch of verylook_see: Word/Excel/PPT/PDF/PSD.
  *
  * Logic per content type (not hardcoded rules — judged from the parse):
  * - .docx / .xlsx: extract text/tables; describe embedded images via the
@@ -13,7 +13,7 @@
  * - .psd: layer tree; optional whole-design vision description and single
  *   layer extraction as a transparent PNG attachment.
  *
- * The vision config is looklook's `vision` namespace (shared with image and
+ * The vision config is verylook's `vision` namespace (shared with image and
  * video recognition — no separate docreader config). Files are read through
  * the `fs` service so sandbox policy applies.
  */
@@ -300,14 +300,14 @@ function renderPsdNode(node: PsdNode, depth: number, out: string[]): void {
 
 const DOC_EXTENSIONS = ['.docx', '.xlsx', '.pptx', '.pdf', '.psd'] as const
 
-/** Whether a source path is a document file looklook_see should route here. */
+/** Whether a source path is a document file verylook_see should route here. */
 export function isDocumentPath(path: string): boolean {
   const lower = path.toLowerCase()
   return DOC_EXTENSIONS.some(ext => lower.endsWith(ext))
 }
 
 /**
- * Read and analyze a document file — the document branch of looklook_see.
+ * Read and analyze a document file — the document branch of verylook_see.
  * @param source - the document file path.
  * @param question - the user's question (passed through, model-facing).
  * @returns the digest text (or a failure message).

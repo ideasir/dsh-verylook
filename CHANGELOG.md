@@ -38,13 +38,13 @@
 ### 新增
 - **会话 Header 复制按钮**：在会话标题栏左侧（`conversation.session.header.actions` order=-100）注册一个小图标按钮，点击复制 `dsh-session://<id>` + 标题。比消息栏按钮更可靠——对话出错导致单条消息未渲染时，消息栏按钮消失，但 Header 按钮始终可见。
 - **CopySessionIdButton**：修改标题字段来源从 `s.displayTitle` 改为从 `useSessions` 的 `byId[sessionId].title` 读取（准确获取持久化标题）。
-- **MutationObserver 循环触发**（ChatMinimap 越点越多）：给标尺添加 `looklook-minimap` class，observer 排除自身变化。
+- **MutationObserver 循环触发**（ChatMinimap 越点越多）：给标尺添加 `verylook-minimap` class，observer 排除自身变化。
 - **ChatMinimap 加载不全**：从 React store 直接读取完整消息列表，不再依赖 DOM 查询（虚拟滚动只渲染 6 个节点）。
 - **ChatMinimap 切换会话延迟**：改用 document.body MutationObserver 实时监听，不再轮询等待。
 
 ### 变更
 - **接口定义迁移**：`SessionModality`、`EnvCheckItem`、`EnvCheckReport`、`CapabilityItem`、`CapabilityReport` 从 `upload-shared.ts` 导出（原在 `plugin-settings.ts`）。
-- **`looklook-skill` 更新**：指示 AI 用 `[f:serverName]` 标记做 `looklook_see` 的 source 参数，避免文件找不到。
+- **`verylook-skill` 更新**：指示 AI 用 `[f:serverName]` 标记做 `verylook_see` 的 source 参数，避免文件找不到。
 
 ## [0.3.0] - 2026-08-19
 
@@ -57,19 +57,19 @@
 - **PPT 背景音乐识别缺失 `max_tokens` 参数**：`identifyBackgroundMusic` 向音频模型发送请求时未设置 `max_tokens`，部分 OpenAI-compatible 提供商可能因此拒绝请求。现已补充 `max_tokens: 200`。
 
 ### 说明
-- rc.7 新增的「各插件可自行注册设置卡片」机制，Look Look 已通过 `settings.plugin.item` slot 正确注册，无需额外适配。
+- rc.7 新增的「各插件可自行注册设置卡片」机制，VeryLook 已通过 `settings.plugin.item` slot 正确注册，无需额外适配。
 - rc.7 新增的「提问卡片支持折叠并保留草稿」与 pending files 机制兼容，已验证无冲突。
 - README 中最低版本要求已更新为 `v0.1.0-rc.7`。
 
 ## [0.2.1] - 2026-08-17
 
 ### 修复
-- **彻底移除消息内容里的原始标记**：不再往用户消息里注入 `【looklook:开始】...【looklook:结束】` 和 `【looklook:file】{json}【looklook:file】`，避免排队（pending）气泡暴露内部代码。
+- **彻底移除消息内容里的原始标记**：不再往用户消息里注入 `【verylook:开始】...【verylook:结束】` 和 `【verylook:file】{json}【verylook:file】`，避免排队（pending）气泡暴露内部代码。
 - **上传文件同名覆盖**：多个重名文件（如剪贴板多次粘贴的 `image.png`）不再互相覆盖，保存时追加时间戳后缀生成唯一文件名。
 
 ### 优化
 - **排队气泡显示更清晰**：消息注记从「上传了文件：xxx」改为「[类型]文件名 排队中...」（如 `[图片]image_abc123.png 排队中...`），一眼可辨文件类型与具体文件。
-- **`looklook_see` 直接传文件名**：不再需要完整路径，直接传 `image_abc123.png` 会自动去会话 `.uploads/` 目录解析文件。
+- **`verylook_see` 直接传文件名**：不再需要完整路径，直接传 `image_abc123.png` 会自动去会话 `.uploads/` 目录解析文件。
 - **定稿后缩略图**：消息定稿后自动把注记替换为图片缩略图卡片（新增 CLEAN_NOTE_RE 解析）。
 
 ### 说明

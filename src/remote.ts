@@ -1,5 +1,5 @@
 /**
- * Host receiver for the client's RPCs (`remote.looklook`):
+ * Host receiver for the client's RPCs (`remote.verylook`):
  * - `listModels` — probe an OpenAI-compatible `/models` endpoint with the
  *   provider's stored credential, so the settings page can verify an API key
  *   and offer the model list without a separate "test connection" step;
@@ -28,18 +28,18 @@ import { runCapabilityCheck, type CapabilityReport } from './capability-check.ts
 import { chatCompletionsUrl } from './vision-client.ts'
 
 /** One model-discovery outcome, returned over the wire as lossless JSON. */
-export type LooklookListModelsResult =
+export type VerylookListModelsResult =
   | { ok: true; models: string[] }
   | { ok: false; error: string }
 
 /** One vision-model capability probe outcome. */
-export type LooklookTestVisionResult =
+export type VerylookTestVisionResult =
   | { ok: true; supportsImage: boolean; message: string }
   | { ok: false; error: string }
 
 /** One audio-model capability probe outcome (L1 = transcript-only,
  * L2 = transcript + tone/music/pace via input_audio). */
-export type LooklookTestAudioResult =
+export type VerylookTestAudioResult =
   | { ok: true; level: 'L1' | 'L2' | 'none'; message: string }
   | { ok: false; error: string }
 
@@ -52,25 +52,25 @@ const TEST_IMAGE_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQ
 const TEST_AUDIO_BASE64 = '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'
 
 /** One upload outcome. */
-export type LooklookUploadResult =
+export type VerylookUploadResult =
   | { ok: true; path: string; name: string; size: number }
   | { ok: false; error: string }
 
-const LOOKLOOK_SETTINGS_NAMESPACES = new Set(['looklook', 'vision', 'looklook-audio'])
-const LOOKLOOK_CREDENTIAL_PREFIX = 'LOOKLOOK_'
+const VERYLOOK_SETTINGS_NAMESPACES = new Set(['verylook', 'vision', 'verylook-audio'])
+const VERYLOOK_CREDENTIAL_PREFIX = 'VERYLOOK_'
 
-export type LooklookSettingsResult =
+export type VerylookSettingsResult =
   | { ok: true; value: unknown }
   | { ok: false; error: string }
 
-export type LooklookCredentialsResult =
+export type VerylookCredentialsResult =
   | { ok: true; credentials: Record<string, { configured: boolean; writable: boolean }> }
   | { ok: false; error: string }
 
 
 
 /** Session modality probe outcome. */
-export type LooklookModalityResult =
+export type VerylookModalityResult =
   | { ok: true; supportsImage: boolean }
   | { ok: false; error: string }
 
@@ -78,24 +78,24 @@ export type LooklookModalityResult =
 const FETCH_REDIRECT = 'error' as const
 
 /**
- * Host service answering `remote.looklook.*`. Extends
+ * Host service answering `remote.verylook.*`. Extends
  * `TypertRemoteService` so the gateway's source-mode discovery sees the
- * binding (`ctx.looklookRemote` ← wire namespace `looklook`); the client
+ * binding (`ctx.verylookRemote` ← wire namespace `verylook`); the client
  * mounts the matching descriptor.
  */
-export class LooklookRemoteService extends TypertRemoteService {
+export class VerylookRemoteService extends TypertRemoteService {
   constructor(ctx: Context) {
-    super(ctx, 'looklookRemote', { namespace: 'looklook' })
+    super(ctx, 'verylookRemote', { namespace: 'verylook' })
   }
 
   /** Read the three plugin-owned settings namespaces without exposing them as
    * configurable LLM providers in the global model-provider picker. */
   @Remote
-  async describeSettings(): Promise<LooklookSettingsResult> {
+  async describeSettings(): Promise<VerylookSettingsResult> {
     try {
       const settings = this.ctx.get('settings')
       if (settings === undefined) return { ok: false, error: '设置服务未就绪' }
-      const namespaces = [...LOOKLOOK_SETTINGS_NAMESPACES].map(ns => ({
+      const namespaces = [...VERYLOOK_SETTINGS_NAMESPACES].map(ns => ({
         ns,
         value: settings.get(settingsNamespace(ns)),
       }))
@@ -109,7 +109,7 @@ export class LooklookRemoteService extends TypertRemoteService {
   @Remote
   async updateSettings(payload: { ns: string; patch: Record<string, unknown> }): Promise<{ ok: true } | { ok: false; error: string }> {
     try {
-      if (!LOOKLOOK_SETTINGS_NAMESPACES.has(payload.ns)) return { ok: false, error: '不允许更新该设置命名空间' }
+      if (!VERYLOOK_SETTINGS_NAMESPACES.has(payload.ns)) return { ok: false, error: '不允许更新该设置命名空间' }
       const settings = this.ctx.get('settings')
       if (settings === undefined) return { ok: false, error: '设置服务未就绪' }
       await settings.update(settingsNamespace(payload.ns), payload.patch)
@@ -121,13 +121,13 @@ export class LooklookRemoteService extends TypertRemoteService {
 
   /** Describe plugin-owned API-key references without returning values. */
   @Remote
-  async describeCredentials(refs: string[]): Promise<LooklookCredentialsResult> {
+  async describeCredentials(refs: string[]): Promise<VerylookCredentialsResult> {
     try {
       const credentials = this.ctx.get('credentials')
       if (credentials === undefined) return { ok: false, error: '凭据服务未就绪' }
       const result: Record<string, { configured: boolean; writable: boolean }> = {}
       for (const ref of refs) {
-        if (!ref.startsWith(LOOKLOOK_CREDENTIAL_PREFIX)) continue
+        if (!ref.startsWith(VERYLOOK_CREDENTIAL_PREFIX)) continue
         const info = await credentials.describe(credentialRef(ref))
         result[ref] = { configured: info.configured, writable: info.writable }
       }
@@ -141,7 +141,7 @@ export class LooklookRemoteService extends TypertRemoteService {
   @Remote
   async setCredential(payload: { ref: string; value: string }): Promise<{ ok: true } | { ok: false; error: string }> {
     try {
-      if (!payload.ref.startsWith(LOOKLOOK_CREDENTIAL_PREFIX) || payload.value.length === 0) {
+      if (!payload.ref.startsWith(VERYLOOK_CREDENTIAL_PREFIX) || payload.value.length === 0) {
         return { ok: false, error: '不允许写入该凭据引用' }
       }
       const credentials = this.ctx.get('credentials')
@@ -166,7 +166,7 @@ export class LooklookRemoteService extends TypertRemoteService {
     baseURL: string
     apiKeyEnv: string
     apiKey?: string
-  }): Promise<LooklookListModelsResult> {
+  }): Promise<VerylookListModelsResult> {
     let key = provider.apiKey
     if (key === undefined || key.length === 0) {
       const credentials = this.ctx.get('credentials')
@@ -212,7 +212,7 @@ export class LooklookRemoteService extends TypertRemoteService {
     name: string
     /** Base64-encoded file bytes. */
     data: string
-  }): Promise<LooklookUploadResult> {
+  }): Promise<VerylookUploadResult> {
     try {
       const result = await saveUpload(this.ctx, payload.sessionId, payload.name, payload.data)
       return { ok: true, ...result }
@@ -231,7 +231,7 @@ export class LooklookRemoteService extends TypertRemoteService {
    * decide between the native image pipeline and the file channel.
    */
   @Remote
-  async sessionModality(sessionId: string): Promise<LooklookModalityResult> {
+  async sessionModality(sessionId: string): Promise<VerylookModalityResult> {
     try {
       const sessions = this.ctx.get('sessions') as {
         get(id: string): {
@@ -345,7 +345,7 @@ export class LooklookRemoteService extends TypertRemoteService {
       try {
         const vision = settings?.get(settingsNamespace('vision')) as { providers?: Array<{ enabled?: boolean }> } | undefined
         hasVisionModel = (vision?.providers ?? []).some(p => p.enabled !== false)
-        const audio = settings?.get(settingsNamespace('looklook-audio')) as { providers?: Array<{ enabled?: boolean }> } | undefined
+        const audio = settings?.get(settingsNamespace('verylook-audio')) as { providers?: Array<{ enabled?: boolean }> } | undefined
         hasAudioModel = (audio?.providers ?? []).some(p => p.enabled !== false)
       } catch {
         // settings 未就绪时按未配置处理
@@ -376,7 +376,7 @@ export class LooklookRemoteService extends TypertRemoteService {
     apiKeyEnv: string
     apiKey?: string
     model: string
-  }): Promise<LooklookTestVisionResult> {
+  }): Promise<VerylookTestVisionResult> {
     let key = provider.apiKey
     if (key === undefined || key.length === 0) {
       const credentials = this.ctx.get('credentials')
@@ -452,7 +452,7 @@ export class LooklookRemoteService extends TypertRemoteService {
     apiKeyEnv: string
     apiKey?: string
     model: string
-  }): Promise<LooklookTestAudioResult> {
+  }): Promise<VerylookTestAudioResult> {
     let key = provider.apiKey
     if (key === undefined || key.length === 0) {
       const credentials = this.ctx.get('credentials')
@@ -500,7 +500,7 @@ export class LooklookRemoteService extends TypertRemoteService {
       const localPkg = JSON.parse(readFileSync(pkgPath, 'utf8'))
       const localVersion = localPkg.version ?? ''
       // 从 GitHub raw 获取远端 package.json 版本
-      const resp = await fetch('https://ghfast.top/https://raw.githubusercontent.com/ideasir/dsh-looklook/main/package.json', {
+      const resp = await fetch('https://ghfast.top/https://raw.githubusercontent.com/ideasir/dsh-verylook/main/package.json', {
         signal: AbortSignal.timeout(8_000),
       })
       if (!resp.ok) return { ok: true, hasUpdate: false, remoteVersion: localVersion }
@@ -514,7 +514,7 @@ export class LooklookRemoteService extends TypertRemoteService {
     }
   }
 
-  /** 卸载 looklook 插件（从 profile 移除 + 删除文件）。 */
+  /** 卸载 verylook 插件（从 profile 移除 + 删除文件）。 */
   @Remote
   async uninstallPlugin(): Promise<{ ok: true; restart: boolean } | { ok: false; error: string }> {
     try {
@@ -527,29 +527,29 @@ export class LooklookRemoteService extends TypertRemoteService {
       const profilePkg = JSON.parse(readFileSync(pkgPath, 'utf8'))
 
       // 从 dependencies 移除
-      if (profilePkg.dependencies?.['dsh-looklook']) {
-        delete profilePkg.dependencies['dsh-looklook']
+      if (profilePkg.dependencies?.['dsh-verylook']) {
+        delete profilePkg.dependencies['dsh-verylook']
       }
 
       // 从 bundles 移除
       if (Array.isArray(profilePkg.dsh?.profile?.bundles)) {
         profilePkg.dsh.profile.bundles = profilePkg.dsh.profile.bundles.filter(
-          (b: string) => b !== 'dsh-looklook',
+          (b: string) => b !== 'dsh-verylook',
         )
       }
 
       // 写回
       writeFileSync(pkgPath, JSON.stringify(profilePkg, null, 2) + '\n', 'utf8')
 
-      // 删除 node_modules 中的 looklook
-      const nmDir = join(profileDir, 'node_modules', 'dsh-looklook')
+      // 删除 node_modules 中的 verylook
+      const nmDir = join(profileDir, 'node_modules', 'dsh-verylook')
       if (existsSync(nmDir)) rmSync(nmDir, { recursive: true, force: true })
 
-      // 删除 .pnpm 中的 looklook 相关
+      // 删除 .pnpm 中的 verylook 相关
       const pnpmDir = join(profileDir, 'node_modules', '.pnpm')
       if (existsSync(pnpmDir)) {
         for (const entry of readdirSync(pnpmDir)) {
-          if (entry.startsWith('dsh-looklook@')) {
+          if (entry.startsWith('dsh-verylook@')) {
             rmSync(join(pnpmDir, entry), { recursive: true, force: true })
           }
         }

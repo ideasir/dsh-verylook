@@ -1,5 +1,5 @@
 /**
- * dsh-looklook/zip-tool — the `process_zip` tool (vendored from
+ * dsh-verylook/zip-tool — the `process_zip` tool (vendored from
  * @ideasir/dsh-zip): list, extract, and read entries of ZIP archives.
  *
  * The tool is always registered; the upload channel's extension whitelist

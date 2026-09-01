@@ -1,5 +1,5 @@
 /**
- * ModelSettings — the looklook "模型配置" section inside the plugin card:
+ * ModelSettings — the verylook "模型配置" section inside the plugin card:
  * - 视觉模型: recognizes images AND video frames (video = frames → image).
  *   Primary + fallbacks with automatic failover.
  * - 音频模型: transcript + sound understanding in one config; the plugin
@@ -21,8 +21,8 @@ export interface ModelSettingsInjected {
   api: IApiClient
   /** Plugin-owned settings and credential RPCs. */
   pluginSettings: PluginSettingsClient
-  /** Bound translate for the `looklook` namespace. */
-  t: TranslateNS<'looklook'>
+  /** Bound translate for the `verylook` namespace. */
+  t: TranslateNS<'verylook'>
   /** Probe one provider's `/models` endpoint through the host RPC. */
   listModels: (provider: { baseURL: string; apiKeyEnv: string; apiKey?: string }) => Promise<
     { ok: true; models: string[] } | { ok: false; error: string }
@@ -154,7 +154,7 @@ export function ModelSettingsSection(props: ModelSettingsInjected) {
           if (!res.ok) return
           const namespaces = res.namespaces
           const vision = namespaces.find(n => n.ns === 'vision')?.value as { providers?: Array<{ enabled?: boolean }> } | undefined
-          const audio = namespaces.find(n => n.ns === 'looklook-audio')?.value as { providers?: Array<{ enabled?: boolean }> } | undefined
+          const audio = namespaces.find(n => n.ns === 'verylook-audio')?.value as { providers?: Array<{ enabled?: boolean }> } | undefined
           setStatus({
             vision: (vision?.providers ?? []).some(p => p.enabled !== false),
             audio: (audio?.providers ?? []).some(p => p.enabled !== false),
@@ -213,7 +213,7 @@ export function ModelSettingsSection(props: ModelSettingsInjected) {
           api={api}
           pluginSettings={pluginSettings}
           t={t}
-          ns="looklook-audio"
+          ns="verylook-audio"
           title={t('settings.audio.title')}
           intro={t('settings.audio.intro')}
           listModels={listModels}

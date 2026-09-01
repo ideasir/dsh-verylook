@@ -1,5 +1,5 @@
 /**
- * dsh-looklook/video — the `looklook_see` video branch: understand a video, whether
+ * dsh-verylook/video — the `verylook_see` video branch: understand a video, whether
  * it was uploaded as a local file (session `.uploads/`) or referenced by a
  * URL (Bilibili / YouTube / Douyin / generic via the vendored Python worker).
  *
@@ -44,7 +44,7 @@ const WORKER_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'scripts'
  * running inside node_modules is a packaging smell). Keyed by this package so
  * concurrent DSH profiles do not collide.
  */
-const TMP_DIR = join(tmpdir(), 'dsh-looklook')
+const TMP_DIR = join(tmpdir(), 'dsh-verylook')
 
 
 /**
@@ -687,7 +687,7 @@ function formatTime(seconds: number): string {
 
 /**
  * Watch and analyze a video (local file path or URL) — the video branch of
- * the unified looklook_see tool.
+ * the unified verylook_see tool.
  * @returns the composed report text (or a failure message).
  */
 export async function watchVideo(

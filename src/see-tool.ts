@@ -1,5 +1,5 @@
 /**
- * looklook_see — the unified "look at anything" tool.
+ * verylook_see — the unified "look at anything" tool.
  *
  * One tool name for every content type; the tool itself decides how to look:
  * - local image file → vision model;
@@ -8,7 +8,7 @@
  * - document files (.docx/.xlsx/.pptx/.pdf/.psd) → extracted digest.
  *
  * The main model only needs to remember ONE tool for understanding content:
- * looklook_see(source, question). (process_zip stays separate for the
+ * verylook_see(source, question). (process_zip stays separate for the
  * extract operation, which changes the filesystem rather than understanding
  * content.)
  */
@@ -16,8 +16,8 @@
 import { credentialRef } from '@deepseek-ai/dsh-credentials'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import type { Context } from '@deepseek-ai/cordis'
-import type { AudioScope, LooklookScope, VisionScope } from './settings.ts'
-import { looklookEnabled } from './settings.ts'
+import type { AudioScope, VerylookScope, VisionScope } from './settings.ts'
+import { verylookEnabled } from './settings.ts'
 import { describeImageFile } from './describe-tool.ts'
 import { watchVideo } from './video-tool.ts'
 import { readDocumentFile, isDocumentPath } from './doc-tool.ts'
@@ -81,16 +81,16 @@ async function listZip(path: string, question: string): Promise<string> {
   }
 }
 
-/** Register the unified looklook_see tool. */
+/** Register the unified verylook_see tool. */
 export function registerSeeTool(
   ctx: Context,
   visionScope: VisionScope,
   audioScope: AudioScope,
-  features: LooklookScope,
+  features: VerylookScope,
 ): void {
   ctx.tools.register(defineTool({
-    name: 'looklook_see',
-    description: 'Look Look 内置查看图片、视频、zip、PSD、PPT/PDF/Word/Excel。遇到这些内容请直接调用本工具，不要先安装 npm/pip 解析依赖。source 使用原始文件路径、图片引用或视频 URL；question 使用用户的实际问题。PSD 默认返回整体设计与图层结构，不批量导出图层。',
+    name: 'verylook_see',
+    description: 'VeryLook 内置查看图片、视频、zip、PSD、PPT/PDF/Word/Excel。遇到这些内容请直接调用本工具，不要先安装 npm/pip 解析依赖。source 使用原始文件路径、图片引用或视频 URL；question 使用用户的实际问题。PSD 默认返回整体设计与图层结构，不批量导出图层。',
     parameters: {
       source: {
         type: 'string',
@@ -121,7 +121,7 @@ export function registerSeeTool(
       let source = typeof args.source === 'string' && args.source.trim() !== '' ? args.source.trim() : ''
       if (source === '') return { text: '看内容失败：缺少 source 参数' }
       // Master switch: OFF = plugin dormant, everything answers "已关闭".
-      if (!looklookEnabled(features)) {
+      if (!verylookEnabled(features)) {
         return { text: '看看插件已关闭：请在「插件配置 → 看看」里开启总开关后再使用。' }
       }
       const question = typeof args.question === 'string' && args.question.trim() !== ''
@@ -130,7 +130,7 @@ export function registerSeeTool(
       // Bare file name (no path separators / not a URL / not a legacy ref):
       // the file channel uploads user files into the session `.uploads/`, and
       // the note now carries only the clean unique name. Resolve it against
-      // that directory so the model can call looklook_see("xxx.png", q).
+      // that directory so the model can call verylook_see("xxx.png", q).
       if (!/^https?:\/\//i.test(source)
         && !source.includes('/')
         && !source.includes('\\')

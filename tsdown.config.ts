@@ -1,5 +1,5 @@
 /**
- * dsh-looklook client bundle build (tsdown). Emits the closure-factory
+ * dsh-verylook client bundle build (tsdown). Emits the closure-factory
  * artifact the browser loader expects: the bundle calls
  * `window.__ModuleLoader__.load({ id, factory })` and resolves externals
  * through the injected require (loader module table). Platform modules stay
@@ -16,10 +16,10 @@ const PLATFORM_MODULES = [
   '@deepseek-ai/dsh-client-schema-form',
 ] as const
 
-const CLIENT_EXTERNALS: readonly string[] = [...PLATFORM_MODULES, '@deepseek-ai/dsh-client-runtime/client']
+const CLIENT_EXTERNALS: readonly string[] = [...PLATFORM_MODULES]
 
 export default {
-  name: 'dsh-looklook/client',
+  name: 'dsh-verylook/client',
   entry: { client: 'src/client/index.ts' },
   outDir: 'lib',
   format: 'cjs',
@@ -36,7 +36,7 @@ export default {
   noExternal: (id: string) => (CLIENT_EXTERNALS.includes(id) ? undefined : true),
   outputOptions: {
     entryFileNames: 'client.js',
-    banner: 'window.__ModuleLoader__.load({ id: "dsh-looklook", factory: (require) => {',
+    banner: 'window.__ModuleLoader__.load({ id: "dsh-verylook", factory: (require) => {',
     footer: 'return module.exports; } });',
     intro: 'var module = { exports: {} }; var exports = module.exports;',
   },
