@@ -21,7 +21,6 @@ import { createFeatureController, type FeatureController } from './feature-contr
 import { createPendingFilesController, type PendingFilesController } from './pending-files.ts'
 import { CopySessionIdButton, type CopySessionIdInjected } from './CopySessionIdButton.tsx'
 import { SessionHeaderCopyButton, type SessionHeaderCopyButtonProps } from './SessionHeaderCopyButton.tsx'
-import { installChatMinimap } from './ChatMinimap.ts'
 import { VerylookUserMessageNodeView } from './UserMessageNodeView.tsx'
 import { VerylookPluginCard, type VerylookCardInjected } from './PluginTab.tsx'
 import { VisionToggle, type VisionToggleInjected } from './VisionToggle.tsx'
@@ -1186,7 +1185,4 @@ export function apply(ctx: ClientContext): void {
     id: 'verylook-session-header-copy',
     order: -100,
   }, SessionHeaderCopyButton))
-
-  // ── Chat minimap — left-side vertical dash bar ────────────────
-  ctx.effect(() => { installChatMinimap(); return () => {} }, 'dsh-verylook: chat minimap')
 }

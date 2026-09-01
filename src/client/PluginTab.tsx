@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react'
 import type { IApiClient } from '@deepseek-ai/dsh-host-apiproxy/client'
 import type { TranslateNS } from '@deepseek-ai/dsh-client-ui-slots'
 import type { PluginSettingsClient } from './plugin-settings.ts'
-import { Button, IconChevronDownOutline14 } from '@deepseek-ai/dsh-client-ui-primitives'
+import { IconChevronDownOutline14 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { FeatureController, FeatureState } from './feature-controller.ts'
 import { VerylookFeaturesSection, type FeaturesInjected } from './Features.tsx'
 import { ModelSettingsSection, type ModelSettingsInjected } from './VisionSettings.tsx'
@@ -271,15 +271,35 @@ export function VerylookPluginCard(props: VerylookCardInjected) {
           >
             {hasUpdate ? '有更新' : '已最新'}
           </button>
-          {/* 环境检测 */}
-          <Button
-            variant="outline"
-            size="sm"
+          {/* 环境检测（与 ideasir/卸载/已最新 一致：药丸形 + hover 反馈） */}
+          <button
+            type="button"
             onClick={(event) => { event.stopPropagation(); setEnvOpen(true) }}
-            aria-label={t('env.checkButton')}
+            title={t('env.checkButton')}
+            style={{
+              fontSize: 12,
+              lineHeight: '18px',
+              fontWeight: 500,
+              color: 'var(--dsw-alias-label-secondary)',
+              background: 'var(--dsw-alias-bg-layer-1)',
+              border: '1px solid var(--dsw-alias-border-l2)',
+              borderRadius: 999,
+              padding: '2px 10px',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              transition: 'color .12s ease, border-color .12s ease, background .12s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'var(--dsw-alias-brand-primary)'
+              e.currentTarget.style.borderColor = 'var(--dsw-alias-brand-primary)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--dsw-alias-label-secondary)'
+              e.currentTarget.style.borderColor = 'var(--dsw-alias-border-l2)'
+            }}
           >
             {t('env.checkButton')}
-          </Button>
+          </button>
           <span style={{ ...css.chevron, display: 'inline-flex', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .14s ease-in-out' }}>
             <IconChevronDownOutline14 />
           </span>

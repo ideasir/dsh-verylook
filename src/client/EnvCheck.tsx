@@ -7,7 +7,6 @@
 
 import { useEffect, useState } from 'react'
 import type { TranslateNS } from '@deepseek-ai/dsh-client-ui-slots'
-import { Button } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { EnvCheckItem, EnvCheckReport } from './upload-shared.ts'
 
 /** Injected face supplied by the plugin card. */
@@ -21,8 +20,8 @@ const css = {
   overlay: {
     position: 'fixed' as const,
     inset: 0,
-    zIndex: 1000,
-    background: 'rgba(0,0,0,0.45)',
+    zIndex: 2147483000,
+    background: 'rgba(0,0,0,0.5)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -30,19 +29,27 @@ const css = {
   },
   dialog: {
     boxSizing: 'border-box' as const,
-    width: 'min(560px, 100%)',
+    width: 'min(560px, 92vw)',
     maxHeight: '80vh',
     overflow: 'auto',
     background: 'var(--dsw-alias-bg-layer-2)',
     border: '1px solid var(--dsw-alias-border-l2)',
     borderRadius: 14,
-    padding: '18px 20px',
+    boxShadow: '0 18px 50px rgba(0,0,0,0.5)',
     display: 'flex',
     flexDirection: 'column' as const,
     gap: 14,
   },
-  header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  title: { margin: 0, fontSize: 16, lineHeight: '24px', fontWeight: 600, color: 'var(--dsw-alias-label-primary)' },
+  header: {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+    position: 'sticky' as const, top: 0, zIndex: 1,
+    background: 'var(--dsw-alias-bg-layer-2)',
+    padding: '14px 16px', margin: '-18px -20px 0',
+    borderBottom: '1px solid var(--dsw-alias-border-l1)',
+  },
+  headerTitle: { display: 'flex', alignItems: 'center', gap: 8 },
+  title: { margin: 0, fontSize: 15, lineHeight: '24px', fontWeight: 600, color: 'var(--dsw-alias-label-primary)' },
+  body: { padding: '0 16px', display: 'flex', flexDirection: 'column' as const, gap: 14 },
   summary: { margin: 0, fontSize: 13, lineHeight: '20px', color: 'var(--dsw-alias-label-tertiary)' },
   item: {
     display: 'flex',
@@ -60,7 +67,7 @@ const css = {
   guidance: { fontSize: 12, lineHeight: '18px', color: 'var(--dsw-alias-label-secondary)', marginTop: 6, whiteSpace: 'pre-wrap', wordBreak: 'break-word' },
   itemBody: { flex: 1, minWidth: 0 },
   actions: { display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 4 },
-  footer: { display: 'flex', justifyContent: 'flex-end', gap: 8, borderTop: '1px solid var(--dsw-alias-border-l1)', paddingTop: 12 },
+  footer: { display: 'flex', justifyContent: 'flex-end', gap: 8, borderTop: '1px solid var(--dsw-alias-border-l1)', paddingTop: 12, marginBottom: 2 },
 } as const
 
 function statusColor(status: 'ok' | 'missing' | 'error'): string {
@@ -95,9 +102,24 @@ function CheckItemRow({ item, repairing, onRepair }: {
         )}
         {item.repairable && item.status !== 'ok' && item.repairAction !== undefined && (
           <div style={css.actions}>
-            <Button variant="outline" size="sm" disabled={repairing} onClick={() => onRepair(item)}>
+            <button
+              type="button"
+              disabled={repairing}
+              onClick={() => onRepair(item)}
+              style={{
+                fontSize: 12, lineHeight: '18px', fontWeight: 500,
+                color: 'var(--dsw-alias-label-secondary)',
+                background: 'var(--dsw-alias-bg-layer-1)',
+                border: '1px solid var(--dsw-alias-border-l2)',
+                borderRadius: 8, padding: '4px 12px', cursor: repairing ? 'default' : 'pointer',
+                opacity: repairing ? 0.6 : 1, whiteSpace: 'nowrap',
+                transition: 'color .12s ease, border-color .12s ease, background .12s ease',
+              }}
+              onMouseEnter={(e) => { if (repairing) return; e.currentTarget.style.color = 'var(--dsw-alias-brand-primary)'; e.currentTarget.style.borderColor = 'var(--dsw-alias-brand-primary)' }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--dsw-alias-label-secondary)'; e.currentTarget.style.borderColor = 'var(--dsw-alias-border-l2)' }}
+            >
               {repairing ? '修复中…' : '一键修复'}
-            </Button>
+            </button>
           </div>
         )}
       </div>
@@ -143,23 +165,44 @@ export function EnvCheckDialog(props: EnvCheckInjected & { onClose: () => void }
     <div style={css.overlay} onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div style={css.dialog} role="dialog" aria-modal="true" aria-label={t('env.dialogTitle')}>
         <div style={css.header}>
-          <h2 style={css.title}>{t('env.dialogTitle')}</h2>
-          <Button variant="ghost" size="sm" onClick={onClose}>{t('env.close')}</Button>
+          <span style={css.headerTitle}>
+            <h2 style={css.title}>{t('env.dialogTitle')}</h2>
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{ border: 'none', background: 'transparent', color: 'var(--dsw-alias-label-secondary)', cursor: 'pointer', display: 'inline-flex', padding: 4 }}
+          >✕</button>
         </div>
-        {report !== null && <p style={css.summary}>{report.summary}</p>}
-        {error !== null && <p style={{ margin: 0, fontSize: 13, color: 'var(--dsw-alias-state-error-primary)' }}>{error}</p>}
-        {report !== null && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {report.items.map(item => (
-              <CheckItemRow key={item.id} item={item} repairing={repairing === item.id} onRepair={repair} />
-            ))}
+        <div style={css.body}>
+          {report !== null && <p style={css.summary}>{report.summary}</p>}
+          {error !== null && <p style={{ margin: 0, fontSize: 13, color: 'var(--dsw-alias-state-error-primary)' }}>{error}</p>}
+          {report !== null && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {report.items.map(item => (
+                <CheckItemRow key={item.id} item={item} repairing={repairing === item.id} onRepair={repair} />
+              ))}
+            </div>
+          )}
+          {report === null && error === null && (
+            <p style={{ margin: 0, fontSize: 13, color: 'var(--dsw-alias-label-tertiary)' }}>{t('env.checking')}</p>
+          )}
+          <div style={css.footer}>
+            <button
+              type="button"
+              onClick={() => void refresh()}
+              style={{
+                fontSize: 13, lineHeight: '18px', fontWeight: 500,
+                color: 'var(--dsw-alias-label-secondary)',
+                background: 'var(--dsw-alias-bg-layer-1)',
+                border: '1px solid var(--dsw-alias-border-l2)',
+                borderRadius: 8, padding: '6px 14px', cursor: 'pointer',
+                transition: 'color .12s ease, border-color .12s ease, background .12s ease',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--dsw-alias-brand-primary)'; e.currentTarget.style.borderColor = 'var(--dsw-alias-brand-primary)' }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--dsw-alias-label-secondary)'; e.currentTarget.style.borderColor = 'var(--dsw-alias-border-l2)' }}
+            >{t('env.refresh')}</button>
           </div>
-        )}
-        {report === null && error === null && (
-          <p style={{ margin: 0, fontSize: 13, color: 'var(--dsw-alias-label-tertiary)' }}>{t('env.checking')}</p>
-        )}
-        <div style={css.footer}>
-          <Button variant="outline" size="sm" onClick={() => void refresh()}>{t('env.refresh')}</Button>
         </div>
       </div>
     </div>
