@@ -27,6 +27,8 @@ import { VisionToggle, type VisionToggleInjected } from './VisionToggle.tsx'
 import { FileChips, type FileChipsInjected } from './FileChips.tsx'
 import { isUploadableName, isNativeImageName, uploadFile, type SessionModality, type EnvCheckItem, type EnvCheckReport, type CapabilityItem, type CapabilityReport } from './upload-shared.ts'
 import { en, zh, type VeryLookKey } from './locales.ts'
+import { applyRenderEnhancer } from './render-enhancer.ts'
+import { createQuoteStore, quotesToMarker, type QuoteStore } from './quote-store.ts'
 import type { PluginSettingsClient } from './plugin-settings.ts'
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
@@ -112,6 +114,9 @@ export function apply(ctx: ClientContext): void {
   const pending: PendingFilesController = createPendingFilesController()
   const usePending = bindSnapshotSelector(pending.store)
 
+  // Quoted media (input-bar quote chips above the composer, NOT attachments).
+  const quotes: QuoteStore = createQuoteStore()
+
   /** Compose a human-readable file note for one uploaded file.
    *  Format: [压缩包] 文件名.zip【verylook:file】{json}【verylook:file】
    *  The queue bubble shows the friendly prefix; the final render
@@ -152,8 +157,10 @@ export function apply(ctx: ClientContext): void {
     const staged = pending.get(sessionId).filter(
       f => f.path !== undefined && f.path !== '' && f.uploading !== true && f.error === undefined,
     )
-    if (staged.length === 0) return draft
     const notes = staged.map(fileNote).join('\n')
+    // 引用标记：输入框上方的引用栏内容合并到 draft（模型可读）。
+    const quoteItems = quotes.get(sessionId)
+    const quoteMarker = quotesToMarker(quoteItems)
     // Save metadata into the global registry for the renderer.
     // Key = original filename (f.name) so the text [图片]f.name matches.
     const reg = new Map(fileRegistry.get(sessionId) ?? [])
@@ -169,7 +176,11 @@ export function apply(ctx: ClientContext): void {
     if (remaining.length > 0) state[sessionId] = remaining
     else delete state[sessionId]
     pending.store.set(state)
-    return draft === '' ? notes : `${draft}\n${notes}`
+    const parts: string[] = []
+    if (draft !== '') parts.push(draft)
+    if (notes !== '') parts.push(notes)
+    if (quoteMarker !== '') parts.push(quoteMarker)
+    return parts.join('\n')
   }
 
   /**
@@ -189,6 +200,11 @@ export function apply(ctx: ClientContext): void {
       submit?: (mode?: string) => void
       state?: { getSnapshot(): { draft?: string } }
     } | undefined
+    // Also grab the raw conversation service for a direct send() path that
+    // bypasses the composer draft entirely.
+    const rawConversation = actx.get?.('conversation') as unknown as {
+      send?: (text: string) => Promise<unknown>
+    } | undefined
     if (shell?.submit === undefined || shell?.setDraft === undefined || shell?.state === undefined) return
     const raw = shell as { __verylookWrapped?: boolean }
     if (raw.__verylookWrapped === true) {
@@ -203,13 +219,21 @@ export function apply(ctx: ClientContext): void {
       try {
         const draft = readDraft()
         const merged = mergeNotesIntoDraft(sessionId, draft)
-        if (merged !== draft) {
+        // 发送成功后清空引用栏（引用只对当次发送有效）
+        const clearQuotes = (): void => quotes.clear(sessionId)
+        if (merged !== draft && rawConversation?.send !== undefined) {
+          // Direct-send path: bypass the composer draft entirely to avoid the
+          // setDraft(merged) → originalSubmit() async-timing race that left
+          // the image marker in the input and sent only the prompt text.
+          void rawConversation.send(merged).then?.(clearQuotes)
+          setDraft('') // clear the composer; user never sees the marker
+        } else if (merged !== draft) {
           setDraft(merged)
           originalSubmit(mode)
-          setDraft(draft) // restore draft immediately so user never sees raw marker
         } else {
           originalSubmit(mode)
         }
+        if (merged === draft) clearQuotes() // 无附件/引用合并也清（保持引用栏干净）
       } catch (error) {
         console.error('verylook submit merge failed:', error)
         originalSubmit(mode)
@@ -284,6 +308,47 @@ export function apply(ctx: ClientContext): void {
   // Plugin master switch (one switch controls the whole plugin).
   const features: FeatureController = createFeatureController(pluginSettings)
   features.load()
+
+  // ── 媒体渲染增强器（出图缩略图卡片）─────────────────
+  // 把对话区 markdown `![alt](url)` 渲染出的 <img> 增强成缩略图卡片：
+  // 图片 → 420px 缩略图 + 点击放大 + 信息行 + 引用按钮；
+  // 视频 → <video> 播放器 + 播放按钮 overlay + 信息行 + 引用按钮。
+  // 纯展示层，常开；总开关关闭时同时停用（跟随插件状态）。
+  let disposeRenderEnhancer: (() => void) | null = null
+  const startRenderEnhancer = (): void => {
+    if (disposeRenderEnhancer !== null || typeof document === 'undefined') return
+    // 引用按钮回调：写入引用栏（输入框上方横条）
+    const quoteHandlers = {
+      onQuoteImage: (url: string, name: string, width?: number, height?: number) => {
+        const sid = sessions.list.getSnapshot().current
+        if (sid) quotes.add(sid, { kind: 'image', name, url, width, height })
+      },
+      onQuoteVideo: (url: string, name: string) => {
+        const sid = sessions.list.getSnapshot().current
+        if (sid) quotes.add(sid, { kind: 'video', name, url })
+      },
+    }
+    disposeRenderEnhancer = applyRenderEnhancer(quoteHandlers)
+  }
+  const stopRenderEnhancer = (): void => {
+    if (disposeRenderEnhancer === null) return
+    disposeRenderEnhancer()
+    disposeRenderEnhancer = null
+  }
+  const syncRenderEnhancer = (): void => {
+    if (typeof document === 'undefined') return
+    const s = features.store.getSnapshot()
+    if (s.status === 'ready' && s.enabled === false) stopRenderEnhancer()
+    else startRenderEnhancer()
+  }
+  ctx.effect(() => {
+    syncRenderEnhancer()
+    const dispose = features.store.subscribe(syncRenderEnhancer)
+    return () => {
+      dispose()
+      stopRenderEnhancer()
+    }
+  }, 'dsh-verylook: render enhancer lifecycle')
   const useFeaturesSnapshot = bindSnapshotSelector(features.store)
   /** Whether the plugin master switch is ON (gates the eye toggle, the
    * settings card's model sections, and every file-channel interception). */
@@ -1001,19 +1066,8 @@ export function apply(ctx: ClientContext): void {
       const sessionId = sessions.list.getSnapshot().current
       if (sessionId === undefined || sessionId === '') return
 
-      const hasNonImage = files.some(file => isUploadableName(file.name))
-      if (!hasNonImage) {
-        // All images: intercept only when the eye is on AND the model is
-        // text-only. Eye off → native pipeline (full native experience).
-        const eye = eyeFor(sessionId).store.getSnapshot()
-        if (eye.status === 'ready' && eye.eye === 'off') return
-        const supportsImage = cachedSupportsImage(sessionId)
-        if (supportsImage === true) return // native pipeline handles it
-        // Unknown modality is treated conservatively as text-only so images
-        // always land somewhere the model can see them; a later refresh will
-        // flip multi-modal sessions back to native.
-      }
-
+      // Route ALL files through the verylook file channel — block native
+      // attachment pipeline entirely.
       event.preventDefault()
       event.stopPropagation()
       // We intercepted the drop, so the built-in handler never runs its
@@ -1035,27 +1089,21 @@ export function apply(ctx: ClientContext): void {
       if (master.status === 'ready' && master.enabled === false) return
       const sessionId = sessions.list.getSnapshot().current
       if (sessionId === undefined || sessionId === '') return
-      const imageFiles = [...event.clipboardData.items]
-        .filter(item => item.kind === 'file' && item.type.startsWith('image/'))
+      const files = [...event.clipboardData.items]
+        .filter(item => item.kind === 'file')
         .map(item => item.getAsFile())
         .filter((file): file is File => file !== null)
-      if (imageFiles.length === 0) return
-      // Same modality gate as drop: eye off → native; model sees images →
-      // native; otherwise file channel.
-      const eye = eyeFor(sessionId).store.getSnapshot()
-      if (eye.status === 'ready' && eye.eye === 'off') return
-      const supportsImage = cachedSupportsImage(sessionId)
-      if (supportsImage === true) return
+      if (files.length === 0) return
+      // Route ALL files through the verylook file channel.
       event.preventDefault()
       event.stopPropagation()
-      void stageUploads(sessionId, imageFiles, pending)
+      void stageUploads(sessionId, files, pending)
     }
     document.addEventListener('paste', onPasteCapture, true)
 
     // "+ 按钮" file picker: the picker commits through an <input type=file>
-    // change event. Intercept in CAPTURE so image picks never reach the
-    // native intake for image-only picks when the session is natively
-    // multimodal. Non-image picks must always use VeryLook's file channel.
+    // change event. Intercept in CAPTURE so files never reach the native
+    // intake — all files route through verylook channel.
     const onChangeCapture = (event: Event): void => {
       const input = event.target
       if (!(input instanceof HTMLInputElement)) return
@@ -1067,13 +1115,7 @@ export function apply(ctx: ClientContext): void {
       if (files.length === 0) return
       const sessionId = sessions.list.getSnapshot().current
       if (sessionId === undefined || sessionId === '') return
-      const hasNonImage = files.some(file => isUploadableName(file.name))
-      if (!hasNonImage) {
-        const eye = eyeFor(sessionId).store.getSnapshot()
-        if (eye.status === 'ready' && eye.eye === 'off') return
-        const supportsImage = cachedSupportsImage(sessionId)
-        if (supportsImage === true) return
-      }
+      // Route ALL files through the verylook file channel.
       event.preventDefault()
       event.stopPropagation()
       // Clear the picker so the same file can be chosen again.
@@ -1090,15 +1132,16 @@ export function apply(ctx: ClientContext): void {
     }
   }, 'dsh-verylook: file drag-and-drop')
 
-  // Pending file chips (like image attachments, removable, sent with the
-  // next Enter/send — the submit patch merges their notes), rendered INSIDE
-  // the composer card (input.attachments), where native image thumbnails go.
-  ctx.slots.inject('conversation.input.dock', () => ctx.slots.register({
-    name: 'conversation.input.dock',
-    id: PENDING_ID,
+  // Pending file chips (all uploads: images + non-images through the verylook
+  // file channel), rendered in the composer card next to the input area
+  // (input.attachments slot) — shadows the native ComposerAttachments by
+  // registering at a lower priority (-1; lowest renders).
+  ctx.slots.inject('conversation.input.attachments', () => ctx.slots.register({
+    name: 'conversation.input.attachments',
+    priority: -1,
     inject: (sessionId: string): FileChipsInjected => {
-      ensureSubmitPatched(sessionId)
-      return { t, pending, usePending, sessionId }
+      if (sessionId !== undefined && sessionId !== '') ensureSubmitPatched(sessionId)
+      return { t, pending, usePending, sessionId, quotes }
     },
   }, FileChips))
 

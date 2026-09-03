@@ -127,21 +127,31 @@ export function registerSeeTool(
       const question = typeof args.question === 'string' && args.question.trim() !== ''
         ? args.question.trim()
         : '请描述这个内容。'
-      // Bare file name (no path separators / not a URL / not a legacy ref):
-      // the file channel uploads user files into the session `.uploads/`, and
-      // the note now carries only the clean unique name. Resolve it against
-      // that directory so the model can call verylook_see("xxx.png", q).
-      if (!/^https?:\/\//i.test(source)
-        && !source.includes('/')
-        && !source.includes('\\')
-        && !/^\s*\{/.test(source)
-        && !/^[a-f0-9]{8,}$/.test(source.trim())
-        && !/^sha256:[a-f0-9]{8,}$/i.test(source.trim())) {
-        const execCwd = exec.agent?.session.header.cwd
+      // Resolve the source to a real file path.
+      // - bare file name ("xxx.png") → `<cwd>/.uploads/xxx.png`
+      // - a path that does NOT exist on disk (the model sometimes invents a
+      //   path like `.dsh/tmp/verylook_uploads/xxx.mp4`) → extract the
+      //   basename and look it up in `<cwd>/.uploads/`
+      // - an existing absolute/relative path or URL → use as-is
+      const execCwd = exec.agent?.session.header.cwd
+      const isUrlSource = /^https?:/i.test(source)
+      const lookups: string[] = []
+      if (!isUrlSource) {
+        const baseName = source.split('/').pop()?.split('\\').pop() ?? source
         if (execCwd !== undefined && execCwd !== '') {
-          const resolved = `${execCwd}/.uploads/${source}`
-          source = resolved
+          lookups.push(`${execCwd}/.uploads/${baseName}`)
+          if (baseName !== source) lookups.push(source) // keep original as fallback
         }
+      }
+      let resolved: string | undefined
+      try {
+        resolved = lookups.find(candidate => require('node:fs').existsSync(candidate))
+      } catch { /* keep undefined */ }
+      if (resolved !== undefined) source = resolved
+      else if (lookups.length > 0 && source !== lookups[0] && lookups[0] !== undefined) {
+        // Nothing exists; prefer the .uploads basename so downstream
+        // workers (ffmpeg/yt-dlp/parsers) get a sane path.
+        source = lookups[0]
       }
       const kind = classifySource(source)
 

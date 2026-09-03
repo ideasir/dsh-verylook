@@ -17,6 +17,7 @@ import { formatSize } from './upload-shared.ts'
 import { FileTypeIcon } from './FileTypeIcon.tsx'
 import { ImageLightbox, type ImageLoader, type ImageLightboxLabels } from './lightbox.tsx'
 import { VideoPlayer } from './video-player.tsx'
+import { parseQuoteMarkers, type QuoteItem } from './quote-store.ts'
 
 /** The host's attachment marker: 「【附图:<ref-json-or-id>】」. */
 const IMAGE_MARKER_RE = /【附图:([^】]+)】/g
@@ -131,17 +132,40 @@ function UploadVideoCard({ sessionId, file, load }: {
         type="button"
         onClick={() => { if (src !== null) setPlaying(true) }}
         aria-label="播放视频"
-        style={{ padding: 0, border: 0, background: 'none', cursor: src !== null ? 'pointer' : 'default', lineHeight: 0 }}
+        style={{ padding: 0, border: 0, background: 'none', cursor: src !== null ? 'pointer' : 'default', lineHeight: 0, position: 'relative', display: 'block' }}
       >
         {src === null
-          ? <div style={{ width: 120, height: 90, borderRadius: 8, background: 'rgba(128,128,128,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', fontSize: 12 }}>加载中…</div>
-          : <video
-              src={src}
-              preload="metadata"
-              muted
-              playsInline
-              style={{ maxWidth: 220, maxHeight: 220, borderRadius: 8, objectFit: 'cover', display: 'block', background: '#000' }}
-            />}
+          ? <div style={{ width: 120, height: 90, borderRadius: 8, background: 'var(--dsw-alias-bg-layer-1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--dsw-alias-label-tertiary)', fontSize: 12 }}>加载中…</div>
+          : <>
+              <video
+                src={src}
+                preload="metadata"
+                muted
+                playsInline
+                style={{ maxWidth: 220, maxHeight: 220, borderRadius: 8, objectFit: 'cover', display: 'block', background: 'var(--dsw-alias-bg-layer-3)' }}
+              />
+              {/* Play icon overlay so the user can tell it's a video */}
+              <span
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: 40,
+                  height: 40,
+                  borderRadius: '50%',
+                  display: 'grid',
+                  placeItems: 'center',
+                  background: 'rgba(0,0,0,0.55)',
+                  border: 'none',
+                  pointerEvents: 'none',
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </span>
+            </>}
       </button>
       {playing && src !== null && (
         <VideoPlayer src={src} onClose={() => setPlaying(false)} />
@@ -351,11 +375,21 @@ export function VerylookUserMessageNodeView(props: UserMessageNodeProps) {
   const joined = texts.join('')
   const sessionId = props.sessionId ?? ''
 
+  // Quote markers: [引用图片]name [f:url] / [引用视频]name [f:url] — referenced
+  // media from the conversation (input-bar quote chips on send).
+  const QUOTE_MARKER_RE = /\[引用(图片|视频)\][^\n]*?\[f:[^\]]+\]/g
+  const quoteItems: QuoteItem[] = []
+  const cleanedJoined = joined
+    .replace(QUOTE_MARKER_RE, (all) => {
+      quoteItems.push(...parseQuoteMarkers(all))
+      return ''
+    })
+
   // New format: [图片]filename (size) [f:serverName] — look up metadata from fileRegistry
   const NEW_NOTE_RE = /\[(图片|视频|压缩包|文档|文件|音频|代码)\]([^\n]+?)\s*\([\d.]+ [KMGT]?B\)\s*\[f:([^\]]+)\]/g
   const reg = props.fileRegistry?.get(sessionId)
 
-  const cleaned = joined
+  const cleaned = cleanedJoined
     .replace(NEW_NOTE_RE, (_all, _label: string, filename: string, serverName: string) => {
       const trimmed = filename.trim()
       const meta = reg?.get(trimmed)
@@ -408,7 +442,7 @@ export function VerylookUserMessageNodeView(props: UserMessageNodeProps) {
       return ''
     })
   const trimmed = cleaned.trim()
-  if (attachments.length === 0 && files.length === 0 && trimmed.length === 0) return null
+  if (attachments.length === 0 && files.length === 0 && quoteItems.length === 0 && trimmed.length === 0) return null
   // Dedupe attachments by id: the same image may appear both as a native
   // content block and inside a marker text (P2: double thumbnail + dup key).
   const seenAttachmentIds = new Set<string>()
@@ -442,6 +476,54 @@ export function VerylookUserMessageNodeView(props: UserMessageNodeProps) {
       {uniqueAttachments.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'flex-end' }}>
           {uniqueAttachments.map((item) => <VerylookThumb key={item.attachmentId} attachment={item} load={load} />)}
+        </div>
+      )}
+      {quoteItems.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, justifyContent: 'flex-end' }}>
+          {quoteItems.map((quote, index) => (
+            <span
+              key={`${quote.url}-${index}`}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+                padding: '2px 8px 2px 6px',
+                borderRadius: 6,
+                background: 'var(--dsw-alias-bg-layer-1)',
+                color: 'var(--dsw-alias-label-tertiary)',
+                fontSize: 11,
+                lineHeight: '18px',
+                maxWidth: 320,
+                overflow: 'hidden',
+              }}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="11" height="11" aria-hidden="true" style={{ flex: 'none' }}>
+                <path d="M15 3h6v6" />
+                <path d="M10 14 21 3" />
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              </svg>
+              <span style={{
+                flex: 'none',
+                fontWeight: 500,
+                whiteSpace: 'nowrap',
+              }}>
+                {quote.kind === 'image' ? '图片' : '视频'}
+              </span>
+              <span style={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                minWidth: 0,
+              }}>
+                {quote.name}
+              </span>
+              {quote.kind === 'image' && quote.width && quote.height && (
+                <span style={{ flex: 'none', color: 'var(--dsw-alias-label-caption)' }}>
+                  {quote.width}×{quote.height}
+                </span>
+              )}
+            </span>
+          ))}
         </div>
       )}
       {trimmed.length > 0 && (
