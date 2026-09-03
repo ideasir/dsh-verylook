@@ -96,7 +96,7 @@ const css = {
 
 /** The plugin-configuration card body. */
 export function VerylookPluginCard(props: VerylookCardInjected) {
-  const { api, pluginSettings, t, features, useFeatures, listModels, testVision, testAudio, envCheck, envRepair, capabilityCheck, getPluginVersion, checkUpdate, uninstallPlugin, usePluginEnabled } = props
+  const { api, pluginSettings, t, features, useFeatures, listModels, testVision, testAudio, envCheck, envRepair, capabilityCheck, getPluginVersion, checkUpdate, uninstallPlugin } = props
   const [open, setOpen] = useState(false)
   const [envOpen, setEnvOpen] = useState(false)
   const [version, setVersion] = useState('')
@@ -104,7 +104,6 @@ export function VerylookPluginCard(props: VerylookCardInjected) {
   const [uninstalling, setUninstalling] = useState(false)
   const [feedback, setFeedback] = useState<string | null>(null)
   // Hook order stays stable: both hooks run before any conditional return.
-  const pluginEnabled = usePluginEnabled()
   const featuresProps: FeaturesInjected = { api, t, features, useFeatures, capabilityCheck }
   const modelProps: ModelSettingsInjected = { api, pluginSettings, t, listModels, testVision, testAudio }
   const envProps: EnvCheckInjected = { t, envCheck, envRepair }
@@ -313,12 +312,7 @@ export function VerylookPluginCard(props: VerylookCardInjected) {
             </p>
           )}
           <VerylookFeaturesSection {...featuresProps} />
-          {pluginEnabled && (
-            <>
-              <div style={{ border: 'none', borderTop: '1px solid var(--dsw-alias-border-l2)' }} />
-              <ModelSettingsSection {...modelProps} />
-            </>
-          )}
+          <ModelSettingsSection {...modelProps} />
         </div>
       )}
       {envOpen && (

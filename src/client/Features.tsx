@@ -1,13 +1,14 @@
 /**
  * VerylookFeaturesSection: 改版后的设置面板主体。
  * - 主开关「开关插件」
- * - 功能检测区：标题「功能检测」+「全部检测」按钮 + 6 行检测项
- *   （识别图像 / 识别视频 / 识别声音 / 识别 PSD / 识别 Office / 支持视频平台）
+ * - 功能检测区：点击「功能检测」按钮弹窗展示 11 项功能检测结果
+ *   （识别图像 / 识别视频 / 识别声音 / 识别 PSD / 识别 Office / 识别 PDF /
+ *     识别压缩包 / 视频平台链接 / 会话引用 / 渲染增强 / 上传通道）
  * - 成功绿色，失败红色 + 原因
  *
  * rc.8 适配：
- * - 去掉原来的「支持的文件格式」grid 和「支持视频平台」列表
- * - 环境检测按钮移到卡片右上角（PluginTab 里）
+ * - 去掉标题「功能开关」和「功能检测」（与卡片头名称重复）
+ * - 按钮文本改为「功能检测」
  */
 
 import { useState } from 'react'
@@ -196,14 +197,9 @@ function CapabilityCheckDialog({ report, error, onClose }: {
         {error !== null && <p style={{ margin: 0, fontSize: 13, color: css.red }}>{error}</p>}
         {report !== null && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {/* 前 5 行（功能检测）：图像/视频/声音/PSD/Office */}
-            {report.items.slice(0, 5).map(item => (
+            {report.items.map(item => (
               <CheckRow key={item.id} item={item} />
             ))}
-            {/* 第 2 个标题：支持视频平台检测 */}
-            <span style={{ ...css.heading, marginTop: 4 }}>支持视频平台检测</span>
-            {/* 第 6 行：视频平台检测 */}
-            {report.items[5] && <CheckRow item={report.items[5]} />}
           </div>
         )}
         {report === null && error === null && (
@@ -214,7 +210,7 @@ function CapabilityCheckDialog({ report, error, onClose }: {
   )
 }
 
-/** The plugin-card body: master switch + capability check list. */
+/** The plugin-card body: master switch + capability check button. */
 export function VerylookFeaturesSection(props: FeaturesInjected) {
   const { t, features, useFeatures, capabilityCheck } = props
   const state = useFeatures()
@@ -241,59 +237,70 @@ export function VerylookFeaturesSection(props: FeaturesInjected) {
 
   return (
     <div style={css.stack}>
-      {/* 主开关 */}
+      {/* 主开关（status-card 包裹, spec 4.6） */}
       <div style={css.section}>
-        <span style={css.heading}>{t('features.switches.heading')}</span>
-        <div style={css.row}>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 12,
+          padding: '10px 12px',
+          border: '1px solid var(--dsw-alias-border-l2)',
+          borderRadius: 10,
+          background: 'var(--dsw-alias-bg-layer-3)',
+        }}>
           <SliderSwitch
             checked={enabled}
             onChange={next => features.setEnabled(next)}
             label={t('features.master.label')}
           />
-          <span style={css.rowText}>
-            <span style={css.rowName}>{t('features.master.label')}</span>
-            <span style={css.rowDesc}>{t('features.master.desc')}</span>
+          <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--dsw-alias-label-primary)' }}>{t('features.master.label')}</span>
+            <span style={{ fontSize: 12, lineHeight: 1.45, color: 'var(--dsw-alias-label-tertiary)' }}>{t('features.master.desc')}</span>
           </span>
         </div>
       </div>
 
-      {/* 功能检测 */}
-      <div style={css.section}>
-        <div style={css.headingRow}>
-          <span style={css.heading}>{t('features.capability.heading')}</span>
-          <button
-            type="button"
-            onClick={() => void runCapCheck()}
-            disabled={capChecking}
-            style={{
-              fontSize: 12,
-              lineHeight: '18px',
-              fontWeight: 500,
-              color: capChecking ? 'var(--dsw-alias-label-tertiary)' : 'var(--dsw-alias-brand-primary)',
-              background: 'none',
-              border: '1px solid var(--dsw-alias-border-l2)',
-              borderRadius: 999,
-              padding: '2px 12px',
-              cursor: capChecking ? 'default' : 'pointer',
-              flex: 'none',
-            }}
-          >
-            {capChecking ? '检测中…' : t('features.capability.checkAll')}
-          </button>
-        </div>
-
-        {/* 检测结果改为弹窗，按钮下只保留提示文案 */}
-        {!dialogOpen && capReport === null && capError === null && (
-          <p style={{ margin: 0, fontSize: 13, color: 'var(--dsw-alias-label-tertiary)' }}>
-            {'点击「全部检测」检查各识别能力是否可用'}
-          </p>
-        )}
-        {!dialogOpen && capError !== null && (
-          <p style={{ margin: 0, fontSize: 13, color: css.red }}>
-            {capError}
-          </p>
-        )}
+      {/* 功能检测卡片（整卡可点，点击弹出检测弹窗） */}
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => void runCapCheck()}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); void runCapCheck() } }}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 12,
+          padding: '10px 12px',
+          border: '1px solid var(--dsw-alias-border-l2)',
+          borderRadius: 10,
+          background: 'var(--dsw-alias-bg-layer-3)',
+          cursor: capChecking ? 'default' : 'pointer',
+          transition: 'border-color .12s ease, background .12s ease',
+        }}
+        onMouseEnter={(e) => {
+          if (capChecking) return
+          e.currentTarget.style.background = 'color-mix(in srgb, var(--dsw-alias-brand-primary) 6%, var(--dsw-alias-bg-layer-3))'
+          e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--dsw-alias-brand-primary) 45%, transparent)'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'var(--dsw-alias-bg-layer-3)'
+          e.currentTarget.style.borderColor = 'var(--dsw-alias-border-l2)'
+        }}
+      >
+        <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--dsw-alias-label-primary)' }}>功能检测</span>
+          <span style={{ fontSize: 12, lineHeight: 1.45, color: 'var(--dsw-alias-label-tertiary)' }}>
+            {capChecking ? '检测中…' : '检查各识别能力是否可用'}
+          </span>
+        </span>
+        <svg
+          width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"
+          style={{ flex: 'none', color: 'var(--dsw-alias-label-tertiary)', transform: capChecking ? 'none' : undefined }}
+        >
+          <path d="m9 6 6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </div>
+      {!dialogOpen && capError !== null && (
+        <p style={{ margin: 0, fontSize: 13, color: css.red }}>
+          {capError}
+        </p>
+      )}
 
       {/* 检测结果弹窗 */}
       {dialogOpen && (

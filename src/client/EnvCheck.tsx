@@ -172,7 +172,7 @@ export function EnvCheckDialog(props: EnvCheckInjected & { onClose: () => void }
             type="button"
             onClick={onClose}
             style={{ border: 'none', background: 'transparent', color: 'var(--dsw-alias-label-secondary)', cursor: 'pointer', display: 'inline-flex', padding: 4 }}
-          >✕</button>
+          ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         </div>
         <div style={css.body}>
           {report !== null && <p style={css.summary}>{report.summary}</p>}

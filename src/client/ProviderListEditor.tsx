@@ -474,7 +474,7 @@ export function ProviderListEditor(props: ProviderListEditorProps) {
       {(editingId !== null || addDraft !== null) && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 9999,
-          background: 'rgba(0,0,0,0.5)',
+          background: 'var(--dsw-alias-bg-mask-1)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: 24,
         }} onClick={() => closeEditor()}>

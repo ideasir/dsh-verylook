@@ -94,9 +94,9 @@ export function apply(ctx: ClientContext): void {
         el.textContent = '已复制会话引用（dsh-session://），可粘贴到其他对话'
         el.style.cssText = [
           'position:fixed', 'bottom:24px', 'left:50%', 'transform:translateX(-50%)',
-          'z-index:99999', 'background:var(--dsw-alias-bg-base,#1a1a2e)',
-          'color:var(--dsw-alias-label-primary,#e0e0e0)',
-          'border:1px solid var(--dsw-alias-border-l2,#333)',
+          'z-index:99999', 'background:var(--dsw-alias-bg-base)',
+          'color:var(--dsw-alias-label-primary)',
+          'border:1px solid var(--dsw-alias-border-l2)',
           'border-radius:10px', 'padding:10px 20px', 'font-size:14px',
           'box-shadow:0 4px 16px rgba(0,0,0,0.3)', 'max-width:80vw',
           'text-align:center', 'word-break:break-all',
@@ -834,15 +834,15 @@ export function apply(ctx: ClientContext): void {
         { ok: boolean; value?: { version: string } | { error?: string }; error?: { message?: string } }
       >
     } | undefined
-    if (remote?.getPluginVersion === undefined) return '0825-0.1.1-rc.2'
+    if (remote?.getPluginVersion === undefined) return '0903-0.1.2-alpha.3'
     try {
       const envelope = await remote.getPluginVersion()
-      if (!envelope.ok) return '0825-0.1.1-rc.2'
+      if (!envelope.ok) return '0903-0.1.2-alpha.3'
       const value = envelope.value
-      if (value === undefined) return '0825-0.1.1-rc.2'
-      return ('version' in value && value.version) ? value.version : '0825-0.1.1-rc.2'
+      if (value === undefined) return '0903-0.1.2-alpha.3'
+      return ('version' in value && value.version) ? value.version : '0903-0.1.2-alpha.3'
     } catch {
-      return '0825-0.1.1-rc.2'
+      return '0903-0.1.2-alpha.3'
     }
   }
 

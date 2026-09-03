@@ -1,5 +1,44 @@
 # CHANGE LOG
 
+## 2026-09-03 v0903-0.1.2-alpha.3 设置面板改版 + 功能检测补全 + 版本更新
+
+### 为什么
+主任要求：①设置面板功能开关/功能检测小标题与卡片头重复，去掉；②「全部检测」按钮改名「功能检测」并放进卡片；③弹窗里补充齐全 verylook 的功能（不只 6 项能力检测）。
+
+### 改了哪些（客户端）
+
+#### Features.tsx（设置面板主体）
+- 去掉「功能开关」「功能检测」两个小标题（与卡片头 VeryLook 重复）
+- 「全部检测」按钮 → 「功能检测」卡片（status-card 样式，整卡可点，hover 品牌色反馈）
+- 布局：主开关卡片 → 功能检测卡片 → （下接视觉/音频模型按钮，去掉分割线）
+
+#### PluginTab.tsx（插件卡片）
+- 去掉 `pluginEnabled` 门控和分割线，三个区块平铺
+- body gap 保持 24px
+
+#### locales.ts
+- `features.capability.checkAll`：「全部检测」→「功能检测」
+
+#### capability-check.ts（服务端检测逻辑）
+- 检测项从 6 → 11 项：
+  - 图像 / 视频 / 声音 / PSD / Office / 视频平台（原有）
+  - PDF（新增，动态 import parser/pdf.ts）
+  - ZIP（新增，动态 import adm-zip）
+  - 会话引用（新增，恒可用）
+  - 渲染增强（新增，恒可用）
+  - 上传通道（新增，恒可用）
+
+### 版本号
+- package.json: `0901-0.1.2-alpha.3` → `0903-0.1.2-alpha.3`
+- client fallback: `0825-0.1.1-rc.2` → `0903-0.1.2-alpha.3`（5 处）
+- README / CHANGELOG / CHANGES 同步
+
+### 验证
+- tsc client + server 零错误
+- build 通过（lib/client.js 204KB）
+- 部署重启 active + 3080 LISTEN
+
+---
 ## 2026-08-29 v0829-0.1.2-rc.2 渠道编辑改为弹窗（与其他插件统一交互）
 
 ### 为什么

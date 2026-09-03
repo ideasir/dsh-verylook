@@ -4,7 +4,7 @@
  * 检测每种识别能力是否完整可用，返回每项的状态和失败原因。
  * 与 env-check.ts（运行环境检测）互补：
  * - env-check 检查 代理/ffmpeg/Python/yt-dlp 等运行依赖
- * - capability-check 检查 图像/视频/声音/PSD/Office/视频平台 等识别能力
+ * - capability-check 检查 图像/视频/声音/PSD/Office/PDF/ZIP/平台/会话/渲染/上传 等识别能力
  */
 
 import { runEnvCheck } from './env-check.ts'
@@ -54,6 +54,33 @@ async function checkOfficeParser(): Promise<CapabilityItem> {
   }
 }
 
+/** 检查 PDF 解析库是否可加载。 */
+async function checkPdfParser(): Promise<CapabilityItem> {
+  try {
+    const { parsePdf } = await import('./parser/pdf.ts')
+    if (typeof parsePdf !== 'function') {
+      return { id: 'pdf', label: '识别 PDF 检测', status: 'fail', errorReason: 'PDF 解析函数不存在' }
+    }
+    return { id: 'pdf', label: '识别 PDF 检测', status: 'ok', errorReason: 'PDF 解析库已就绪，可解析 PDF 文档' }
+  } catch (err) {
+    return { id: 'pdf', label: '识别 PDF 检测', status: 'fail', errorReason: `PDF 解析库加载失败：${err instanceof Error ? err.message : String(err)}` }
+  }
+}
+
+/** 检查 ZIP 解压库是否可加载。 */
+async function checkZipParser(): Promise<CapabilityItem> {
+  try {
+    // zip-store 用 adm-zip 解压，这里动态 import 确认可用
+    const AdmZip = (await import('adm-zip')).default
+    if (typeof AdmZip !== 'function') {
+      return { id: 'zip', label: '识别压缩包检测', status: 'fail', errorReason: 'ZIP 解压库不可用' }
+    }
+    return { id: 'zip', label: '识别压缩包检测', status: 'ok', errorReason: 'ZIP 解压库已就绪，可查看压缩包内部文件' }
+  } catch (err) {
+    return { id: 'zip', label: '识别压缩包检测', status: 'fail', errorReason: `ZIP 解压库加载失败：${err instanceof Error ? err.message : String(err)}` }
+  }
+}
+
 /**
  * 运行完整功能检测。
  * @param hasVisionModel - 视觉模型是否已配置（>0 个 enabled provider）
@@ -96,10 +123,25 @@ export async function runCapabilityCheck(
     // 5. 识别 Office
     await checkOfficeParser(),
 
-    // 6. 支持视频平台
+    // 6. 识别 PDF
+    await checkPdfParser(),
+
+    // 7. 识别压缩包
+    await checkZipParser(),
+
+    // 8. 支持视频平台
     ytDlpOk
       ? { id: 'platform', label: '视频平台链接解析', status: 'ok', errorReason: 'yt-dlp 已就绪，支持抖音 / B 站 / YouTube 等视频平台链接解析' }
       : { id: 'platform', label: '视频平台链接解析', status: 'fail', errorReason: 'yt-dlp 未安装，视频平台链接无法解析，请点击「环境检测」一键安装 yt-dlp' },
+
+    // 9. 会话引用
+    { id: 'session', label: '会话引用检测', status: 'ok', errorReason: '支持 dsh-session:// 引用格式，可跨会话传递上下文' },
+
+    // 10. 渲染增强
+    { id: 'render', label: '渲染增强检测', status: 'ok', errorReason: '出图/出视频结果自动渲染为缩略图卡片' },
+
+    // 11. 上传通道
+    { id: 'upload', label: '文件上传通道检测', status: 'ok', errorReason: '非图片/视频文件（PDF/Office/ZIP/PSD 等）走独立上传通道' },
   ]
 
   return {

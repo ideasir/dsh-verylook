@@ -13,7 +13,7 @@ const overlayStyle: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  background: 'rgba(0, 0, 0, 0.72)',
+  background: 'var(--dsw-alias-bg-mask-1)',
 }
 
 const maskStyle: React.CSSProperties = {
@@ -26,25 +26,25 @@ const videoStyle: React.CSSProperties = {
   maxWidth: '92vw',
   maxHeight: '92vh',
   borderRadius: 8,
-  boxShadow: '0 12px 48px rgba(0,0,0,0.5)',
-  background: '#000',
+  boxShadow: 'var(--dsw-shadow-lv3)',
+  background: 'var(--dsw-alias-bg-base)',
 }
 
 const closeStyle: React.CSSProperties = {
-  position: 'absolute',
-  top: 14,
-  right: 14,
-  width: 32,
-  height: 32,
+  position: 'fixed',
+  top: 20,
+  right: 20,
+  width: 36,
+  height: 36,
   display: 'grid',
   placeItems: 'center',
-  border: 'none',
-  borderRadius: 8,
+  border: '1px solid var(--dsw-alias-border-l2-darkmode-thin)',
+  borderRadius: 999,
   cursor: 'pointer',
-  background: 'rgba(255,255,255,0.14)',
-  color: '#fff',
-  fontSize: 18,
-  lineHeight: 1,
+  background: 'var(--dsw-specific-input-major)',
+  color: 'var(--dsw-alias-label-primary)',
+  padding: 0,
+  zIndex: 1,
 }
 
 /**
@@ -86,7 +86,7 @@ export function VideoPlayer({ src, onClose }: {
         aria-label="视频播放器"
       />
       <button ref={closeRef} type="button" style={closeStyle} aria-label="关闭" onClick={onClose}>
-        ✕
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>,
     document.body,

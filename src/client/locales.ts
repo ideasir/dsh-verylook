@@ -47,7 +47,7 @@ export const zh = {
   'features.master.label': '开关插件',
   'features.master.desc': '这是插件级总开关：关闭后 DSH 暂时恢复原样，插件不会被卸载；需要时重新打开即可。对话框里的小眼睛还可以按会话快速切换，方便体验和比较 VeryLook 的识别效果。',
   'features.capability.heading': '功能检测',
-  'features.capability.checkAll': '全部检测',
+  'features.capability.checkAll': '功能检测',
   'features.capability.platformsHeading': '支持视频平台检测',
   'features.image.label': '识别图像',
   'features.image.desc': '开启后用插件视觉模型识别图片；关闭则交给大模型自身多模态能力（如大模型支持看图）。',
