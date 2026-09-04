@@ -16,7 +16,9 @@
  */
 
 import { readFile } from 'node:fs/promises'
+import { existsSync, readFileSync } from 'node:fs'
 import * as path from 'node:path'
+import * as os from 'node:os'
 import type { Context } from '@deepseek-ai/cordis'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import type { VerylookScope } from './settings.ts'
@@ -31,12 +33,11 @@ import { verylookEnabled } from './settings.ts'
 function r2Config() {
   let file: { token?: string; account?: string; bucket?: string; domain?: string } = {}
   try {
-    const fs = require('node:fs')
-    const os = require('node:os')
-    const p = require('node:path')
-    const raw = fs.readFileSync(p.join(os.homedir(), '.dsh', 'verylook-r2.json'), 'utf-8')
-    file = JSON.parse(raw)
-  } catch { /* 配置文件缺失时仅用环境变量 */ }
+    const configPath = path.join(os.homedir(), '.dsh', 'verylook-r2.json')
+    if (existsSync(configPath)) {
+      file = JSON.parse(readFileSync(configPath, 'utf-8')) as typeof file
+    }
+  } catch { /* 配置文件缺失或损坏时仅用环境变量 */ }
   return {
     token: process.env.VERYLOOK_R2_TOKEN ?? file.token ?? '',
     account: process.env.VERYLOOK_R2_ACCOUNT ?? file.account ?? '',
