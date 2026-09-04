@@ -375,11 +375,16 @@ export function VerylookUserMessageNodeView(props: UserMessageNodeProps) {
   const joined = texts.join('')
   const sessionId = props.sessionId ?? ''
 
-  // Quote markers: [引用图片]name [f:url] / [引用视频]name [f:url] — referenced
-  // media from the conversation (input-bar quote chips on send).
+  // Quote lines (new format): 图片：<URL> / 视频：<URL> — plain-text references.
+  // Legacy markers [引用图片]name [f:url] kept for old session records.
   const QUOTE_MARKER_RE = /\[引用(图片|视频)\][^\n]*?\[f:[^\]]+\]/g
+  const QUOTE_URL_RE = /^(图片|视频)：(https?:\/\/\S+)$/gm
   const quoteItems: QuoteItem[] = []
+  // Collect URL-form quotes first, then strip both formats from the text.
+  const urlQuoteLines = joined.match(QUOTE_URL_RE)
+  if (urlQuoteLines !== null) quoteItems.push(...parseQuoteMarkers(urlQuoteLines.join('\n')))
   const cleanedJoined = joined
+    .replace(QUOTE_URL_RE, '')
     .replace(QUOTE_MARKER_RE, (all) => {
       quoteItems.push(...parseQuoteMarkers(all))
       return ''

@@ -79,34 +79,30 @@ export function createQuoteStore(): QuoteStore {
   } }
 }
 
-/** 把引用列表合并成发送文本里的标记（模型可读）。 */
+/** 把引用列表合并成发送文本里的明文 URL（模型可直接读懂，无需协议解析）。 */
 export function quotesToMarker(quotes: QuoteItem[]): string {
   if (quotes.length === 0) return ''
   const lines = quotes.map(q => {
     const kindLabel = q.kind === 'image' ? '图片' : '视频'
-    const dim = q.kind === 'image' && q.width && q.height ? ` (${q.width}×${q.height})` : ''
-    return `[引用${kindLabel}]${q.name}${dim} [f:${q.url}]`
+    return `${kindLabel}：${q.url}`
   })
   return lines.join('\n')
 }
 
-/** 从文本里解析出引用标记（用于已发送消息渲染）。 */
+/** 从文本里解析出引用行（用于已发送消息渲染引用卡片）。格式：图片：<URL> / 视频：<URL> */
 export function parseQuoteMarkers(text: string): QuoteItem[] {
   const items: QuoteItem[] = []
-  const re = /\[引用(图片|视频)\]([^\n]*?)(?:\s*\((\d+)×(\d+)\))?\s*\[f:([^\]]+)\]/g
+  const re = /^(图片|视频)：(https?:\/\/\S+)$/gm
   let m: RegExpExecArray | null
   while ((m = re.exec(text)) !== null) {
     const kind = m[1] === '视频' ? 'video' : 'image'
-    const name = (m[2] ?? '').trim()
-    const url = (m[5] ?? '').trim()
+    const url = (m[2] ?? '').trim()
     if (!url) continue
     items.push({
       id: `q-${items.length}`,
       kind,
-      name,
+      name: '',
       url,
-      width: m[3] ? parseInt(m[3], 10) : undefined,
-      height: m[4] ? parseInt(m[4], 10) : undefined,
     })
   }
   return items

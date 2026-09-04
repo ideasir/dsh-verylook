@@ -30,6 +30,7 @@ import { settingsNamespace } from '@deepseek-ai/dsh-settings'
 import { Config, VerylookConfig, AudioConfig, verylookEnabled, type VisionSettings, type VisionScope, type VerylookScope, type AudioScope } from './settings.ts'
 import { registerSeeTool } from './see-tool.ts'
 import { registerZipTool } from './zip-tool.ts'
+import { registerUploadTool } from './upload-tool.ts'
 import { VerylookRemoteService } from './remote.ts'
 import { VERYLOOK_SKILL } from './verylook-skill.ts'
 import type {} from './types.ts'
@@ -85,4 +86,7 @@ export function apply(ctx: Context, config: VisionSettings): void {
   // ZIP extraction tool (vendored from dsh-zip): extract operation only —
   // the "look at zip contents" branch lives in verylook_see.
   registerZipTool(ctx)
+
+  // R2 image-hosting tool: base64/local file → public URL (renders + img2img).
+  registerUploadTool(ctx, features)
 }

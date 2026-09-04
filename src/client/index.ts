@@ -834,15 +834,15 @@ export function apply(ctx: ClientContext): void {
         { ok: boolean; value?: { version: string } | { error?: string }; error?: { message?: string } }
       >
     } | undefined
-    if (remote?.getPluginVersion === undefined) return '0903-0.1.2-alpha.3'
+    if (remote?.getPluginVersion === undefined) return '0904-0.1.2-alpha.3'
     try {
       const envelope = await remote.getPluginVersion()
-      if (!envelope.ok) return '0903-0.1.2-alpha.3'
+      if (!envelope.ok) return '0904-0.1.2-alpha.3'
       const value = envelope.value
-      if (value === undefined) return '0903-0.1.2-alpha.3'
-      return ('version' in value && value.version) ? value.version : '0903-0.1.2-alpha.3'
+      if (value === undefined) return '0904-0.1.2-alpha.3'
+      return ('version' in value && value.version) ? value.version : '0904-0.1.2-alpha.3'
     } catch {
-      return '0903-0.1.2-alpha.3'
+      return '0904-0.1.2-alpha.3'
     }
   }
 

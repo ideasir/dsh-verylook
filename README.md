@@ -1,6 +1,6 @@
 # VeryLook
 
-> 当前版本 `0903-0.1.2-alpha.3`，适配 DSH `v0.1.1-rc.2`（开发者预览版）。使 DeepSeek Harness 能 Look 万物——图片、视频、音频、PSD、Office 文档、PDF、压缩包、聊天记录，通通拖进去就能看。
+> 当前版本 `0904-0.1.2-alpha.3`，适配 DSH `v0.1.1-rc.2`（开发者预览版）。使 DeepSeek Harness 能 Look 万物——图片、视频、音频、PSD、Office 文档、PDF、压缩包、聊天记录，通通拖进去就能看。
 
 ![DSH 插件设置页](screenshots/04-settings-zh.jpg)
 ![插件验证报告](screenshots/06-verification-report.jpg)
